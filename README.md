@@ -16,10 +16,10 @@ bash download_full_datast.sh
 * Run preprocessing to concat image-paths, labels, and transcripts into a single TFRecord file for efficient loading
 ```
 # for training dataset
-pyton3 preprocess --image warm-up-train/train --transcript warm-up-train/train_transcriptions.json --lable warm-up-train/train_emotion_labels.csv --out train.tfrecords
+python3 preprocess.py --training True --image warm-up-train/train --transcript warm-up-train/train_transcriptions.json --lable warm-up-train/train_emotion_labels.csv --out train.tfrecords
 
 # for testing dataset
-pythhon3 preprocess --image warm-up-test/test --transcript warm-up-test/test_transcriptions.json --out test.tfrecords
+python3 preprocess.py --training False --image warm-up-test/test --transcript warm-up-test/test_transcriptions.json --out test.tfrecords
 ```
 * Training
 * Inference

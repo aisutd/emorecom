@@ -35,6 +35,7 @@ def train_concat(file_name, image_path, transcripts, labels):
 		for transcript in transcripts:
 			try:
 				# retrieve labels, image, and transcripts
+				print(labels[labels['image_id'] == transcript['img_id']])
 				label = list(
 					labels[labels['image_id'] == transcript['img_id']]
 						.iloc[0][EMOTIONS])
@@ -100,10 +101,10 @@ def test(filename):
 def main(args):
 	
 	# initialize train dataset
-	transcripts = args.transcript
-	image_path = args.image
-	labels = args.label
-	output = args.output
+	transcripts = os.path.join(DEFAULT_PATH, args.transcript)
+	image_path = os.path.join(DEFAULT_PATH, args.image)
+	labels = os.path.join(DEFAULT_PATH, args.label)
+	output = os.path.join(DEFAULT_PATH, args.output)
 
 	# read transcripts
 	with open(transcripts) as file:
@@ -130,8 +131,8 @@ if __name__ == '__main__':
 
 	# add arguments
 	parser.add_argument('--training', type = bool, default = True)
-	parser.add_argument('--image', type = str, default = os.path.join(DEFAULT_PATH, 'warm-up-train', 'train'))
-	parser.add_argument('--transcript', type = str, default = os.path.join(DEFAULT_PATH, 'warm-up-train', 'train_transcriptions.json'))
-	parser.add_argument('--label', type = str, default = os.path.join(DEFAULT_PATH, 'warm-up-train', 'train_emotion_labels.csv'))
-	parser.add_argument('--output', type = str, default = os.path.join(DEFAULT_PATH, 'train.tfrecords'))
+	parser.add_argument('--image', type = str, default = os.path.join('warm-up-train', 'train'))
+	parser.add_argument('--transcript', type = str, default = os.path.join('warm-up-train', 'train_transcriptions.json'))
+	parser.add_argument('--label', type = str, default = os.path.join('warm-up-train', 'train_emotion_labels.csv'))
+	parser.add_argument('--output', type = str, default = os.path.join('train.tfrecords'))
 	main(parser.parse_args())
