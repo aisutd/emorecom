@@ -2,6 +2,12 @@
 ICDAR2021 Competition Multimodal Emotion Recognition on Comics scenes
 
 ## Repo strucutre
+* train.py - training module
+* preprocess.py - module for concatenating image, transcripts, and label for efficient loading
+* dataset - data folder
+* download_warmup_dataset.sh - bash script for downloading warmup data
+* EDA.ipynb - notebook for EDA
+* emorecom - core folder consisting of model, data, and utilities
 
 ## Setup and install datasts
 * Initializee settings
