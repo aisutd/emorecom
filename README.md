@@ -17,11 +17,15 @@ bash download_full_datast.sh
 * Inference
 
 ---
-# Dataset details
-* Warm-up dataset
+## Dataset details
+* Warm-up dataset:
+
 Warm-up data is provided with 800 training images (with transcriptions and labels) and 100 test images (with transcriptions)
 
-## Data format
+* Full dataset:
+Full dataset is provied with 8000 training images (with transcriptsion and labels) and 2000 examples (with transcriptions).
+
+### Data format
 * Labels: 8 emotion classes including: 0=Angry, 1=Disgust, 2=Fear, 3=Happy, 4=Sad, 5=Surprise, 6=Neutral, 7=Others.
 * Each instance includes 10 fields as follows:
 ** id: id of the image in the corresponding set (train or test)
