@@ -1,13 +1,29 @@
 # emorecom
 ICDAR2021 Competition Multimodal Emotion Recognition on Comics scenes
 
-# dataset details
+## Repo strucutre
 
-## warm-up
+## Setup and install datasts
+* Initializee settings
+```
+pip3 install -r requirements.txt
+```
+* Install datasets (warm-up, full)
+```
+bash download_warmup_dataset.sh
+bash download_full_datast.sh
+```
+* Training
+* Inference
+
+---
+# Dataset details
+* Warm-up dataset
 Warm-up data is provided with 800 training images (with transcriptions and labels) and 100 test images (with transcriptions)
+
+## Data format
 * Labels: 8 emotion classes including: 0=Angry, 1=Disgust, 2=Fear, 3=Happy, 4=Sad, 5=Surprise, 6=Neutral, 7=Others.
-* Data Format
-** Each instance includes 10 fields as follows:
+* Each instance includes 10 fields as follows:
 ** id: id of the image in the corresponding set (train or test)
 ** image_id: image_id associated with the image name
 ** emotion0_score: a manually annotated score for emotion0.
