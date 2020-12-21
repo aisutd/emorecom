@@ -54,8 +54,11 @@ Full dataset is provied with 8000 training images (with transcriptsion and label
   
   
 ## References
-* [The Amazing Mysteries of the Gutter:
-Drawing Inferences Between Panels in Comic Book Narratives](https://arxiv.org/pdf/1611.05118.pdf?fbclid=IwAR05cn25dLqTFRY1sY77vNKTV1h4nVUfH1WS0wezrPcKPYngWzXkE0HyzAM)
+* @InProceedings{Iyyer:Manjunatha-Comics2017,
+    Title = {The Amazing Mysteries of the Gutter: Drawing Inferences Between Panels in Comic Book Narratives},
+    Booktitle = {IEEE Conference on Computer Vision and Pattern Recognition},
+    Author = {Mohit Iyyer and Varun Manjunatha and Anupam Guha and Yogarshi Vyas and Jordan Boyd-Graber and Hal {Daum\'{e} III} and Larry Davis},
+    Year = {2017}}
 
 ## Links:
 * [Development notes](https://docs.google.com/document/d/17BGFi8YUqokERZbYnPg0FlMADV-3krUJuTKWczcYrDo/edit?usp=sharing)
