@@ -131,3 +131,5 @@ dmypy.json
 # custom
 dataset/*
 **/.DS_Store
+**/*.py.swp
+**/*.swp

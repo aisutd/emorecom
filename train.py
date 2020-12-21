@@ -19,7 +19,7 @@ def train(args):
 	# initialize train-dataset
 	dataset = Dataset(
 		data_path = train_path,
-		batch_size = 1)
+		batch_size = 4)
 	train_data = dataset(training = True)
 
 	# test train-dataset
