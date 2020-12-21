@@ -105,8 +105,7 @@ class Dataset:
 		"""
 		process_train - function to preprocess image, text, and label
 		"""
-		tf.print(sample.keys())
-		
+
 		return self._image(sample['image']), self._transcripts(sample['transcripts']),self._label(sample['label'])
 
 	@tf.function
