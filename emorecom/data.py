@@ -73,9 +73,6 @@ class Dataset:
 			example = tf.io.parse_single_example(example, self.test_features)
 			return {'image' : example['image'], 'transcripts' : example['transcripts']}
 
-		# batch
-		data = data.batch(self.batch_size)
-		
 		return data
 
 	@tf.function
