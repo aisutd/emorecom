@@ -51,3 +51,12 @@ Full dataset is provied with 8000 training images (with transcriptsion and label
   - emotion4_score: a manually annotated score for emotion4.
   - emotion5_score: a manually annotated score for emotion5. - emotion6_score: a manually annotated score for emotion6.
   - emotion7_score: a manually annotated score for emotion7. 
+  
+  
+## References
+* [The Amazing Mysteries of the Gutter:
+Drawing Inferences Between Panels in Comic Book Narratives](https://arxiv.org/pdf/1611.05118.pdf?fbclid=IwAR05cn25dLqTFRY1sY77vNKTV1h4nVUfH1WS0wezrPcKPYngWzXkE0HyzAM)
+
+## Links:
+* [Development notes](https://docs.google.com/document/d/17BGFi8YUqokERZbYnPg0FlMADV-3krUJuTKWczcYrDo/edit?usp=sharing)
+* [Paper](https://docs.google.com/document/d/17BGFi8YUqokERZbYnPg0FlMADV-3krUJuTKWczcYrDo/edit?usp=sharing)
