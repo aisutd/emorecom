@@ -133,4 +133,3 @@ dataset/*
 **/.DS_Store
 **/*.py.swp
 **/*.swp
-**/neptune_token.txt
