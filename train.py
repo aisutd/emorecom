@@ -39,9 +39,13 @@ def train(args):
 	# initialize model
 	print("Initialize and compile model")
 	MODEL_CONFIGS= {
-		'word_embedding_size' : 100,
 		'img_shape' : [224, 224, 3],
-		'text_shape' : [50, 100]}
+		'text_shape' : [50],
+		'vocab_size' : 100,
+		'vocabs' : None,
+		'max_len' : None,
+		'embed_dim' : 100,
+		'pretrained_embed' : None}
 	model = create_model(configs = MODEL_CONFIGS)
 	print(model.summary())
 
