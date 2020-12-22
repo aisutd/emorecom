@@ -15,17 +15,20 @@ class Dataset:
 	Dataset - class to implement Tensorflow Data API
 	"""
 
-	def __init__(self, data_path, batch_size = 1):
+	def __init__(self, data_path, batch_size = 1, buffer_size = 512, seed = 2021):
 		"""
 		Class constructor:
 		Inputs:
 			- data_path : str or list of str
 				Path(s) to TFRecord dataset
 		"""
+		# set tensorflow random seed
+		tf.random.set_seed(seed)
 
 		# parse arguments
 		self.data = tf.data.TFRecordDataset(data_path)
 		self.batch_size = batch_size
+		self.buffer_size = buffer_size
 
 		# initialize global feature dictionary
 		self.train_features = {
@@ -41,6 +44,8 @@ class Dataset:
 		"""
 		parse_train - function to parse training data in TFRecord format
 		"""
+		# shuffle data
+		data = self.data.shuffle(buffer_size = self.buffer_size)
 
 		# read data
 		@tf.function
@@ -50,7 +55,7 @@ class Dataset:
 			# read image
 			example['image'] = tf.io.read_file(example['image'])
 			return {'image' : example['image'], 'transcripts' : example['transcripts'], 'label' : example['label']}
-		data = self.data.cache().map(_parse, num_parallel_calls = tf.data.experimental.AUTOTUNE)
+		data = data.cache().map(_parse, num_parallel_calls = tf.data.experimental.AUTOTUNE)
 
 		# batch
 		data = data.batch(self.batch_size)
@@ -68,9 +73,6 @@ class Dataset:
 			example = tf.io.parse_single_example(example, self.test_features)
 			return {'image' : example['image'], 'transcripts' : example['transcripts']}
 
-		# batch
-		data = data.batch(self.batch_size)
-		
 		return data
 
 	@tf.function

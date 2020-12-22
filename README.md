@@ -1,5 +1,5 @@
 # emorecom
-[ICDAR2021 Competition Multimodal Emotion Recognition on Comics scenes](https://icdar2021.org/competitions/)
+[ICDAR2021 Competition Multimodal Emotion Recognition on Comics scenes](https://sites.google.com/view/emotion-recognition-for-comics)
 
 ## Repo strucutre
 * train.py - training module
@@ -54,9 +54,13 @@ Full dataset is provied with 8000 training images (with transcriptsion and label
   
   
 ## References
-* [The Amazing Mysteries of the Gutter:
-Drawing Inferences Between Panels in Comic Book Narratives](https://arxiv.org/pdf/1611.05118.pdf?fbclid=IwAR05cn25dLqTFRY1sY77vNKTV1h4nVUfH1WS0wezrPcKPYngWzXkE0HyzAM)
+* @InProceedings{Iyyer:Manjunatha-Comics2017,
+    Title = {The Amazing Mysteries of the Gutter: Drawing Inferences Between Panels in Comic Book Narratives},
+    Booktitle = {IEEE Conference on Computer Vision and Pattern Recognition},
+    Author = {Mohit Iyyer and Varun Manjunatha and Anupam Guha and Yogarshi Vyas and Jordan Boyd-Graber and Hal {Daum\'{e} III} and Larry Davis},
+    Year = {2017}}
 
 ## Links:
 * [Development notes](https://docs.google.com/document/d/17BGFi8YUqokERZbYnPg0FlMADV-3krUJuTKWczcYrDo/edit?usp=sharing)
+* [Experiments](https://docs.google.com/spreadsheets/d/1GZV19w2ddYoYJtQ2RqjkJNh8_IwnGTmslvtFRb-4G1Q/edit?usp=sharing)
 * [Paper](https://docs.google.com/document/d/17BGFi8YUqokERZbYnPg0FlMADV-3krUJuTKWczcYrDo/edit?usp=sharing)
