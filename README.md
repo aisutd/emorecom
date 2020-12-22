@@ -62,4 +62,5 @@ Full dataset is provied with 8000 training images (with transcriptsion and label
 
 ## Links:
 * [Development notes](https://docs.google.com/document/d/17BGFi8YUqokERZbYnPg0FlMADV-3krUJuTKWczcYrDo/edit?usp=sharing)
+* [Experiments](https://docs.google.com/spreadsheets/d/1GZV19w2ddYoYJtQ2RqjkJNh8_IwnGTmslvtFRb-4G1Q/edit?usp=sharing)
 * [Paper](https://docs.google.com/document/d/17BGFi8YUqokERZbYnPg0FlMADV-3krUJuTKWczcYrDo/edit?usp=sharing)
