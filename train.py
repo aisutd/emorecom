@@ -13,6 +13,9 @@ from emorecom.data import Dataset
 
 def train(args):
 
+	# initialize experiment-name
+	experiment = 'model-0'
+
 	# initialize train dataset
 	train_path = args.data_path
 	
