@@ -56,10 +56,9 @@ def EmbeddingLayer(vocab_size, embed_dim, vocabs, max_len = None, pretrained = N
 			for line in file:
 				word, coefs = line.split(maxsplit = 1)
 				coefs = np.fromstring(coefs, 'f', sep = ' ')
-				if len(coefs) != 100:
-					continue
 				embed_index[word] = coefs
 		# initialize new word embedding matrics
+		embed_dim = len(list(embed_index.values())[0])
 		embeds = np.random.uniform(size = (vocab_size, embed_dim))
 		
 		# parse words to pretrained word embeddings
@@ -75,7 +74,7 @@ def EmbeddingLayer(vocab_size, embed_dim, vocabs, max_len = None, pretrained = N
 		initializer = 'uniform'
 
 	return Embedding(input_dim = vocab_size + 1, output_dim = embed_dim,
-		input_length = max_len,
+		input_length = max_len, mask_zero = True,
 		embeddings_initializer = initializer,
 		embeddings_regularizer = None)
 	
