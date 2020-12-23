@@ -5,7 +5,6 @@ train.py - training module
 # import dependencies
 import os
 import glob
-import argparse
 import tensorflow as tf
 
 from tensorflow.keras import optimizers, callbacks, losses, metrics
@@ -14,7 +13,7 @@ from tensorflow.keras import optimizers, callbacks, losses, metrics
 from emorecom.data import Dataset
 from emorecom.model import create_model
 
-def train(args):
+def main():
 	# path variables
 	LOG_DIR = os.path.join(os.getcwd(), 'logs')
 	CHECKPOINT_PATH = os.path.join(os.getcwd(), 'checkpoints')
@@ -23,7 +22,7 @@ def train(args):
 	experiment = 'model-0'
 
 	# initialize train dataset
-	train_path = args.data_path
+	train_path = os.path.join(os.getcwd(), 'dataset', 'train.tfrecords')
 	
 	# initialize train-dataset
 	print("Creating Data Loading")
@@ -41,7 +40,8 @@ def train(args):
 	MODEL_CONFIGS= {
 		'word_embedding_size' : 100,
 		'img_shape' : [224, 224, 3],
-		'text_shape' : [50, 100]}
+		'text_shape' : [50, 100],
+		'vocabs' : os.path.join(os.getcwd(), 'dataset', 'vocabs.pickle'}
 	model = create_model(configs = MODEL_CONFIGS)
 	print(model.summary())
 
@@ -70,7 +70,4 @@ def train(args):
 	#tf.saved_model.save(model, model_path)
 
 if __name__ == '__main__':
-	parser = argparse.ArgumentParser('Argument Parser')
-	parser.add_argument('--data-path',
-		type = str, default = os.path.join(os.getcwd(), 'dataset', 'train.tfrecords'))
-	train(parser.parse_args())
+	main()
