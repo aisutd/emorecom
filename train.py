@@ -42,8 +42,6 @@ def main():
 		'text_shape' : [50, 100],
 		'vocabs' : os.path.join(os.getcwd(), 'dataset', 'vocabs.pickle'),
 		'text_shape' : [50],
-		'vocab_size' : 100,
-		'vocabs' : None,
 		'max_len' : None,
 		'embed_dim' : 100,
 		'pretrained_embed' : './glove.twitter.27B/glove.twitter.27B.100d.txt'}

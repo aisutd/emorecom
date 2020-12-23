@@ -21,8 +21,8 @@ def create_model(configs):
 
 	# text
 	text_model = text(text_shape = configs['text_shape'],
-		vocab_size = configs['vocab_size'], vocabs = configs['vocabs'],
-		max_len = configs['max_len'], embed_dim = configs['embed_dim'],
+		vocabs = configs['vocabs'], max_len = configs['max_len'],
+		embed_dim = configs['embed_dim'],
 		pretrained_embed = configs['pretrained_embed'])
 
 	return Model(inputs = [vision_model.inputs, text_model.inputs],
@@ -48,8 +48,9 @@ def BiLSTM(forward_units, backward_units):
 
 	return Bidirectional(layer = forward, backward_layer = backward, merge_mode = 'concat')
 
-def EmbeddingLayer(vocab_size, embed_dim, vocabs, max_len = None, pretrained = None):
+def EmbeddingLayer(embed_dim, vocabs, max_len = None, pretrained = None):
 
+	vocab_size = len(vocabs)
 	if pretrained:
 		# retrieve pretrained word embeddings
 		embed_index = {}
@@ -79,14 +80,12 @@ def EmbeddingLayer(vocab_size, embed_dim, vocabs, max_len = None, pretrained = N
 		embeddings_initializer = initializer,
 		embeddings_regularizer = None)
 	
-def text(text_shape, vocab_size, vocabs, max_len = None, embed_dim = None, pretrained_embed = None):
+def text(text_shape, vocabs, max_len = None, embed_dim = None, pretrained_embed = None):
 	"""
 	text - function to create textual module
 	Inputs:
 		- text_shape : tuple of integers
 			(max_seq_length, embedding_size)
-		- vocab_size : integer
-			Number of vocabs
 		- vocabs : str
 			Path to dictionary file
 		- max_len : integer, None by defualt
@@ -96,15 +95,15 @@ def text(text_shape, vocab_size, vocabs, max_len = None, embed_dim = None, pretr
 	"""
 
 	# read vocabs
-	with open(vopcab, 'rb') as file:
+	with open(vocabs, 'rb') as file:
 		vocabs = pickle.load(file)
 
 	# initialize input
 	inputs = Input(shape = text_shape)
 
 	# initializer Embedding layer
-	embeddings = EmbeddingLayer(vocab_size = vocab_size, embed_dim = embed_dim,
-		vocabs = vocabs, max_len = max_len, pretrained = pretrained_embed)(inputs)
+	embeddings = EmbeddingLayer(embed_dim = embed_dim, vocabs = vocabs,
+		max_len = max_len, pretrained = pretrained_embed)(inputs)
 
 	tf.print(embeddings.shape)
 	# bidirectional-lstm
