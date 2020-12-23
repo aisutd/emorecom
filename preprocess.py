@@ -152,6 +152,9 @@ def main(args):
 	build_vocab(inputs = transcripts,
 		vocab_name = os.path.join(DEFAULT_PATH, args.vocab_name))
 
+	# buil vocab dictionary
+	
+
 	return None
 
 if __name__ == '__main__':
