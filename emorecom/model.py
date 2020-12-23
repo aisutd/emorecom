@@ -22,7 +22,7 @@ def create_model(configs):
 	# text
 	text_model = text(text_shape = configs['text_shape'],
 		vocabs = configs['vocabs'], max_len = configs['max_len'],
-		embed_dim = configs['embed_dim'],
+		vocab_size configs['vocab_size'], embed_dim = configs['embed_dim'],
 		pretrained_embed = configs['pretrained_embed'])
 
 	return Model(inputs = [vision_model.inputs, text_model.inputs],
@@ -52,7 +52,12 @@ def EmbeddingLayer(embed_dim, vocabs, max_len = None, pretrained = None):
 
 	# retrieve vocab-size
 	# index-0 for out-of-vocab token
-	vocab_size = len(vocabs) + 1
+	if vocabs:
+		vocab_size = len(vocabs) + 1
+	else:
+		vocab_size += 1
+
+	# load pretrained word-embeddings
 	if pretrained:
 		# retrieve pretrained word embeddings
 		embed_index = {}
@@ -81,7 +86,7 @@ def EmbeddingLayer(embed_dim, vocabs, max_len = None, pretrained = None):
 		embeddings_initializer = initializer,
 		embeddings_regularizer = None)
 	
-def text(text_shape, vocabs, max_len = None, embed_dim = None, pretrained_embed = None):
+def text(text_shape, vocabs, vocab_size = None, max_len = None, embed_dim = None, pretrained_embed = None):
 	"""
 	text - function to create textual module
 	Inputs:
@@ -89,6 +94,8 @@ def text(text_shape, vocabs, max_len = None, embed_dim = None, pretrained_embed 
 			(max_seq_length, embedding_size)
 		- vocabs : str
 			Path to dictionary file
+		- vocab_size : integer
+			Number of vocabs, None by default
 		- max_len : integer, None by defualt
 			Maximum length of the input
 		- pretrained_embed : str, None by default
@@ -103,7 +110,7 @@ def text(text_shape, vocabs, max_len = None, embed_dim = None, pretrained_embed 
 	inputs = Input(shape = text_shape)
 
 	# initializer Embedding layer
-	embeddings = EmbeddingLayer(embed_dim = embed_dim, vocabs = vocabs,
+	embeddings = EmbeddingLayer(embed_dim = embed_dim, vocabs = vocabs, vocab_size = vocab_size
 		max_len = max_len, pretrained = pretrained_embed)(inputs)
 
 	# bidirectional-lstm

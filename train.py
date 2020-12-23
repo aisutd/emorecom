@@ -41,6 +41,7 @@ def main():
 		'img_shape' : [224, 224, 3],
 		'text_shape' : [50, 100],
 		'vocabs' : os.path.join(os.getcwd(), 'dataset', 'vocabs.pickle'),
+		'vocab_size' : None,
 		'text_shape' : [50],
 		'max_len' : None,
 		'embed_dim' : 100,
