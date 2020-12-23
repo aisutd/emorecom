@@ -133,3 +133,4 @@ dataset/*
 **/.DS_Store
 **/*.py.swp
 **/*.swp
+**/glove.twitter.27B
