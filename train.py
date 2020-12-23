@@ -45,7 +45,7 @@ def train(args):
 		'vocabs' : None,
 		'max_len' : None,
 		'embed_dim' : 100,
-		'pretrained_embed' : None}
+		'pretrained_embed' : './glove.twitter.27B/glove.twitter.27B.100d.txt'}
 	model = create_model(configs = MODEL_CONFIGS)
 	print(model.summary())
 

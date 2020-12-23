@@ -119,10 +119,13 @@ def main(args):
 
 	# concat images, transcripts, and labels (if training is True)
 	if args.training:
-		train_concat(output, image_path, transcripts, labels)
-		test(output)
+		#train_concat(output, image_path, transcripts, labels)
+		#test(output)
 	else:
 		test_concat(output, image_path, transcripts)
+
+	# buil vocab dictionary
+	
 
 	return None
 
