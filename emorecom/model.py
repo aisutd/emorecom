@@ -50,7 +50,9 @@ def BiLSTM(forward_units, backward_units):
 
 def EmbeddingLayer(embed_dim, vocabs, max_len = None, pretrained = None):
 
-	vocab_size = len(vocabs)
+	# retrieve vocab-size
+	# index-0 for out-of-vocab token
+	vocab_size = len(vocabs) + 1
 	if pretrained:
 		# retrieve pretrained word embeddings
 		embed_index = {}
@@ -59,23 +61,22 @@ def EmbeddingLayer(embed_dim, vocabs, max_len = None, pretrained = None):
 				word, coefs = line.split(maxsplit = 1)
 				coefs = np.fromstring(coefs, 'f', sep = ' ')
 				embed_index[word] = coefs
+
 		# initialize new word embedding matrics
 		embed_dim = len(list(embed_index.values())[0])
 		embeds = np.random.uniform(size = (vocab_size, embed_dim))
 		
 		# parse words to pretrained word embeddings
-		words, indices = vocabs
-		for text, i in zip(words.numpy(), indices.numpy()):
-			word = str(text)[2:-1] # get word from byte-class string
+		for text, i in vocabs.items():
 			embed = embed_index.get(word)
-			if embed:
-				embeds[i] = embed
+			if embed is not None:
+				embeds[i + 1] = embed
 
-		initialilzer = Constant(embeds)
+		initializer = Constant(embeds)
 	else:
 		initializer = 'uniform'
 
-	return Embedding(input_dim = vocab_size + 1, output_dim = embed_dim,
+	return Embedding(input_dim = vocab_size, output_dim = embed_dim,
 		input_length = max_len, mask_zero = True,
 		embeddings_initializer = initializer,
 		embeddings_regularizer = None)
@@ -105,7 +106,6 @@ def text(text_shape, vocabs, max_len = None, embed_dim = None, pretrained_embed 
 	embeddings = EmbeddingLayer(embed_dim = embed_dim, vocabs = vocabs,
 		max_len = max_len, pretrained = pretrained_embed)(inputs)
 
-	tf.print(embeddings.shape)
 	# bidirectional-lstm
 	outputs = BiLSTM(128, 128)(embeddings)
 
