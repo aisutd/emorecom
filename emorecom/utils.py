@@ -3,7 +3,6 @@ utils.py - data-preprocessing module
 """
 
 # import dependencies
-<<<<<<< HEAD
 import re
 import string
 import tensorflow as tf

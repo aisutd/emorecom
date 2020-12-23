@@ -3,6 +3,7 @@ model.py - module for developing model
 """
 
 # import dependencies
+import pickle
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras import Input, Model
@@ -86,13 +87,17 @@ def text(text_shape, vocab_size, vocabs, max_len = None, embed_dim = None, pretr
 			(max_seq_length, embedding_size)
 		- vocab_size : integer
 			Number of vocabs
-		- vocabs : dict
-			Dictionary of words-index
+		- vocabs : str
+			Path to dictionary file
 		- max_len : integer, None by defualt
 			Maximum length of the input
 		- pretrained_embed : str, None by default
 			Path to the pretrained embedding file
 	"""
+
+	# read vocabs
+	with open(vopcab, 'rb') as file:
+		vocabs = pickle.load(file)
 
 	# initialize input
 	inputs = Input(shape = text_shape)

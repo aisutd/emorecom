@@ -110,6 +110,7 @@ def build_vocab(inputs, vocab_name):
 
 	# find unique words and sort alphabetically
 	vocabs = sorted(list(set(vocabs)))
+	vocabs = {word : i for i,word in enumerate(vocabs)} # convert list of words to dictionary of word-index
 
 	# write voacbs file
 	with open(vocab_name, 'wb') as file:
@@ -151,9 +152,6 @@ def main(args):
 	## retrieve vocabs
 	build_vocab(inputs = transcripts,
 		vocab_name = os.path.join(DEFAULT_PATH, args.vocab_name))
-
-	# buil vocab dictionary
-	
 
 	return None
 
