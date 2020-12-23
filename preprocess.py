@@ -6,9 +6,12 @@ preprocess.py - training module
 import os
 import json
 import glob
+import pickle
 import argparse
 import pandas as pd
 import tensorflow as tf
+
+from emorecom.utils import regex_replace
 
 # default path
 DEFAULT_PATH = os.path.join(os.getcwd(), 'dataset')
@@ -25,11 +28,7 @@ def train_concat(file_name, image_path, transcripts, labels):
 			'transcripts' : tf.train.Feature(bytes_list = tf.train.BytesList(value = [transcript])),
 			'label' : tf.train.Feature(bytes_list = tf.train.BytesList(value = [label]))}
 		
-		output = tf.train.Example(features = tf.train.Features(feature = output)).SerializeToString()
-
-		# check file
-		print(tf.train.Example.FromString(output))
-		return output
+		return tf.train.Example(features = tf.train.Features(feature = output)).SerializeToString()
 
 	with tf.io.TFRecordWriter(file_name) as writer:
 		for transcript in transcripts:
@@ -49,33 +48,31 @@ def train_concat(file_name, image_path, transcripts, labels):
 				print(e)
 
 def test_concat(file_name, image_path, transcripts):
-        """
-        concat - function to concat images, transcripts, and labels together
-        """
+	"""
+	concat - function to concat images, transcripts, and labels together
+ 	"""
 
-        def parse(input):
-                output = {
-                        'input' : tf.train.Feature(bytes_list = tf.train.BytesList(value = [input]))
-                }
-                output = tf.train.Example(features = tf.train.Features(feature = output)).SerializeToString()
+	def parse(input):
+		output = {
+			'input' : tf.train.Feature(bytes_list = tf.train.BytesList(value = [input]))
+		}
+		return tf.train.Example(features = tf.train.Features(feature = output)).SerializeToString()
 
-                # check file
-                return output
+	with tf.io.TFRecordWriter(file_name) as writer:
+		for transcript in transcripts:
+			try:
+				# retrieve labels, image, and transcripts
+				texts = ';'.join(transcript['dialog'])
+				img = os.path.join(image_path, transcript['img_id'] + '.jpg')
 
-        with tf.io.TFRecordWriter(file_name) as writer:
-                for transcript in transcripts:
-                        try:
-                                # retrieve labels, image, and transcripts
-                                texts = ';'.join(transcript['dialog'])
-                                img = os.path.join(image_path, transcript['img_id'] + '.jpg')
+				# concat img, transcripts, and label
+				concat = '/'.join([img, texts]).encode('utf-8')
 
-                                # concat img, transcripts, and label
-                                concat = '/'.join([img, texts]).encode('utf-8')
+				# parse image, transcript, label to tfrecord-example
+				writer.write(parse(concat))
+			except Exception as e:
+				print(e)
 
-                                # parse image, transcript, label to tfrecord-example
-                                writer.write(parse(concat))
-                        except Exception as e:
-                                print(e)
 def test(filename):
 	"""
 	test - function to inspect if data is concatonated correctly
@@ -98,6 +95,26 @@ def test(filename):
 	parsed_data = data.map(_parse)
 	print(next(iter(parsed_data)))
 
+def build_vocab(inputs, vocab_name):
+	print("Build vocabs")
+
+	vocabs = [] # initialize empty list of vocabs
+
+	for sent in inputs:
+		# regex replace
+		sent = tf.constant(sent)
+		sent = regex_replace(sent).numpy().decode('utf-8')
+		
+		# add to vocabs
+		vocabs.extend(sent.split())
+
+	# find unique words and sort alphabetically
+	vocabs = sorted(list(set(vocabs)))
+
+	# write voacbs file
+	with open(vocab_name, 'wb') as file:
+		pickle.dump(vocabs, file)
+
 def main(args):
 	
 	# initialize train dataset
@@ -119,10 +136,21 @@ def main(args):
 
 	# concat images, transcripts, and labels (if training is True)
 	if args.training:
-		train_concat(output, image_path, transcripts, labels)
-		test(output)
+		print("Concat images, transcripts, and labels")
+		#train_concat(output, image_path, transcripts, labels)
+		#test(output)
 	else:
-		test_concat(output, image_path, transcripts)
+		print("Concat images and transcripts")
+		#test_concat(output, image_path, transcripts)
+
+	# build vocabs
+		
+	## flatten transcripts
+	transcripts = [item for sublist in transcripts for item in sublist['dialog']]
+	
+	## retrieve vocabs
+	build_vocab(inputs = transcripts,
+		vocab_name = os.path.join(DEFAULT_PATH, args.vocab_name))
 
 	return None
 
@@ -134,5 +162,6 @@ if __name__ == '__main__':
 	parser.add_argument('--image', type = str, default = os.path.join('warm-up-train', 'train'))
 	parser.add_argument('--transcript', type = str, default = os.path.join('warm-up-train', 'train_transcriptions.json'))
 	parser.add_argument('--label', type = str, default = os.path.join('warm-up-train', 'train_emotion_labels.csv'))
-	parser.add_argument('--output', type = str, default = os.path.join('train.tfrecords'))
+	parser.add_argument('--output', type = str, default = 'train.tfrecords')
+	parser.add_argument('--vocab-name', type =str, default = 'vocabs.pickle')
 	main(parser.parse_args())
