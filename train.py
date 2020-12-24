@@ -5,7 +5,6 @@ train.py - training module
 # import dependencies
 import os
 import glob
-import argparse
 import tensorflow as tf
 
 from tensorflow.keras import optimizers, callbacks, losses, metrics
@@ -14,48 +13,54 @@ from tensorflow.keras import optimizers, callbacks, losses, metrics
 from emorecom.data import Dataset
 from emorecom.model import create_model
 
-# global variables
-LOG_DIR = os.path.join(os.getcwd(), 'logs')
-CHECKPOINT_PATH = os.path.join(os.getcwd(), 'checkpoints')
-
-def train(args):
+def main():
+	# path variables
+	LOG_DIR = os.path.join(os.getcwd(), 'logs')
+	CHECKPOINT_PATH = os.path.join(os.getcwd(), 'checkpoints')
 
 	# initialize experiment-name
 	experiment = 'model-0'
 
 	# initialize train dataset
-	train_path = args.data_path
+	train_path = os.path.join(os.getcwd(), 'dataset', 'train.tfrecords')
 	
 	# initialize train-dataset
 	print("Creating Data Loading")
+	vocab_path = os.path.join(os.getcwd(), 'dataset', 'vocabs.txt')
+	max_len = 128
+	batch_size = 4
 	dataset = Dataset(
-		data_path = train_path,
-		batch_size = 4)
+		data_path = train_path, vocabs = vocab_path, 
+		max_len = max_len, batch_size = batch_size)
 	train_data = dataset(training = True)
 
 	# test train-dataset
-	sample = next(iter(train_data))
-	print(sample)
+	for sample in train_data.take(1):
+		images, transcripts, labels = sample
+		print(images.shape, transcripts.shape, labels.shape)
+		input()
 
 	# initialize model
 	print("Initialize and compile model")
 	MODEL_CONFIGS= {
-	}
+		'img_shape' : [224, 224, 3],
+		'text_shape' : [50],
+		'vocabs' : vocab_path,
+		'vocab_size' : None,
+		'max_len' : max_len,
+		'embed_dim' : None,
+		'pretrained_embed' : './glove.twitter.27B/glove.twitter.27B.100d.txt',
+		'num_class' : 8}
 	model = create_model(configs = MODEL_CONFIGS)
+	print(model.summary())
 
 	# set hyperparameters
-	PARAMS = {
-		'LR' = 0.0001,
-		'EPOCH' = 50,
-		'CALLBACKS' : [],
-		'OPTIMIZER' : optimizers.Adam,
-		'LOSS
-	}
 	# compile model
-	OPTIMIZER = optimzers.Adam(learning_rate = PARAMS['LR'])
-	LOSS = losses.BinaryCrossEntropy(from_logis = True)
-	METRICS = [metrics.accuracy]
-	model.compile(optimizer = OPTIMZER, loss = LOSS, metrics = METRICS)
+	LR = 0.0001
+	OPTIMIZER = optimizers.Adam(learning_rate = LR)
+	LOSS = losses.CategoricalCrossentropy(from_logits = True)
+	METRICS = [metrics.CategoricalAccuracy(), metrics.Precision(), metrics.Recall()]
+	#model.compile(optimizer = OPTIMZER, loss = LOSS, metrics = METRICS)
 
 	# set hyperparameters
 	print("Start training")
@@ -65,16 +70,13 @@ def train(args):
 		callbacks.TensorBoard(log_dir = LOG_DIR, write_images = True),
 		callbacks.ModelCheckpoint(filepath = CHECKPOINT_PATH, monitor = 'val_loss', verbose = 1, save_best_only = True, mode = 'min')]
 	EPOCHS = 50
-	STEPS_PER_EPOCH = NONE
-	model.fit(train_data, verbose = 1, callbacks = CALLBACKS, epochs = EPOCHS,
-		steps_per_epoch = STEPS_PER_EPOCH)
+	STEPS_PER_EPOCH = None
+	#model.fit(train_data, verbose = 1, callbacks = CALLBACKS, epochs = EPOCHS,
+	#	steps_per_epoch = STEPS_PER_EPOCH)
 
 	# save model
-	model_path = experiment
-	tf.saved_model.save(model_path)
+	#model_path = experiment
+	#tf.saved_model.save(model, model_path)
 
 if __name__ == '__main__':
-	parser = argparse.ArgumentParser('Argument Parser')
-	parser.add_argument('--data-path',
-		type = str, default = os.path.join(os.getcwd(), 'dataset', 'train.tfrecords'))
-	train(parser.parse_args())
+	main()

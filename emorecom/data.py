@@ -4,31 +4,44 @@ data.py - data-loading module
 
 # import dependencies
 import os
-import tensorflow as tf
 import cv2
+import pickle
+import tensorflow as tf
 
 # import local packages
-
+from emorecom.utils import basic_text_proc
 
 class Dataset:
 	"""
 	Dataset - class to implement Tensorflow Data API
 	"""
 
-	def __init__(self, data_path, batch_size = 1, buffer_size = 512, seed = 2021):
+	def __init__(self, data_path, vocabs, max_len, batch_size = 1, buffer_size = 512, seed = 2021):
 		"""
 		Class constructor:
 		Inputs:
 			- data_path : str or list of str
 				Path(s) to TFRecord dataset
+			- vocabs : str
+				Path to vocabs dictionary
+			- batch_size : integer
+				Number of smapels/batch
+			- buffer_size : integer
+				Number of samples for shuffling
+			- seed : integer
+				Random seed
 		"""
 		# set tensorflow random seed
 		tf.random.set_seed(seed)
 
 		# parse arguments
-		self.data = tf.data.TFRecordDataset(data_path)
+		self.data = tf.data.TFRecordDataset(data_path) # cache data
 		self.batch_size = batch_size
 		self.buffer_size = buffer_size
+		self.max_len = max_len
+
+		# read vocabs dictionary
+		self.vocabs = self.load_vocabs(vocabs)
 
 		# initialize global feature dictionary
 		self.train_features = {
@@ -39,6 +52,20 @@ class Dataset:
 		self.test_features = {
 			'image' : tf.io.FixedLenFeature([], tf.string),
 			'transcripts' : tf.io.FixedLenFeature([], tf.string)}
+
+	def load_vocabs(self, file):
+		"""
+		load_vocabs - function to load vocabularies
+		Inputs:
+			- file : str
+				Path to  vocabulary dictionary
+		"""
+
+		initializer =  tf.lookup.TextFileInitializer(filename = file,
+			key_dtype = tf.string, key_index = tf.lookup.TextFileIndex.WHOLE_LINE,
+			value_dtype = tf.int64, value_index = tf.lookup.TextFileIndex.LINE_NUMBER)
+
+		return tf.lookup.StaticHashTable(initializer, default_value = 0)
 
 	def parse_train(self):
 		"""
@@ -54,11 +81,9 @@ class Dataset:
 
 			# read image
 			example['image'] = tf.io.read_file(example['image'])
+
 			return {'image' : example['image'], 'transcripts' : example['transcripts'], 'label' : example['label']}
 		data = data.cache().map(_parse, num_parallel_calls = tf.data.experimental.AUTOTUNE)
-
-		# batch
-		data = data.batch(self.batch_size)
 
 		return data
 
@@ -72,7 +97,7 @@ class Dataset:
 		def _parse(example):
 			example = tf.io.parse_single_example(example, self.test_features)
 			return {'image' : example['image'], 'transcripts' : example['transcripts']}
-
+		data = data.cache().map(_parse, num_parallel_calls = tf.data.experimental.AUTOTUNE)
 		return data
 
 	@tf.function
@@ -87,6 +112,22 @@ class Dataset:
 		"""
 		process transcripts
 		"""
+
+		# split transcripts
+		input = tf.strings.split(input, sep = ';')
+
+		# check split transcripts
+		#tf.print('text', input, tf.size(input), input.shape)
+
+		# processing: lowercase, strip whitepsaces, tokenize, and padding
+		input = tf.map_fn(fn = lambda x: basic_text_proc(x, self.max_len), elems = input,
+			fn_output_signature = tf.string)
+		#tf.print('tokenized', input, tf.size(input), tf.shape(input))
+
+		# decode vocab-index
+		input = self.vocabs.lookup(input)
+		#tf.print("decoded", input, tf.size(input), tf.shape(input))
+
 		return input
 
 	@tf.function
@@ -107,7 +148,6 @@ class Dataset:
 		"""
 		process_train - function to preprocess image, text, and label
 		"""
-
 		return self._image(sample['image']), self._transcripts(sample['transcripts']),self._label(sample['label'])
 
 	@tf.function
@@ -126,9 +166,15 @@ class Dataset:
 		# parse data
 		data = self.parse_train() if training else self.parse_test()
 
+		# batch
+		data = data.batch(self.batch_size)
+
 		# preprocessing image and text
 		func = self.process_train if training else self.process_test
 		data = data.map(func , num_parallel_calls = tf.data.experimental.AUTOTUNE)
+
+		# batching
+		#data = data.batch(self.batch_size)
 
 		# return data
 		return data.prefetch(tf.data.experimental.AUTOTUNE)
