@@ -8,36 +8,36 @@ import string
 import tensorflow as tf
 
 @tf.function
-def basic_text_proc(input, max_len):
+def basic_text_proc(inputs, max_len):
 	"""
 	basic_text_proc - function to perform fundamental text-processing (not considering WordPiece Tokenizer)
 	"""
 
 	# lower case
-	input = tf.strings.lower(input)
-
-	# strip whitespaces
-	input = tf.strings.strip(input)
+	inputs = tf.strings.lower(inputs)
 
 	# flatten punctuations and short-forms
-	input = regex_replace(input)
+	inputs = regex_replace(inputs)
+
+	# remove trivial whitespace
+	inputs = tf.strings.regex_replace(inputs, pattern = "\s+", rewrite = " ")
 
 	# join string together
-	input = tf.strings.reduce_join(input, separator = '[SEP]')
+	inputs = tf.strings.reduce_join(inputs, separator = '[SEP]')
 
 	# tokenize (split by space)
 	#tf.print('basic-text-proc', input, tf.size(input))
-	input = tf.strings.split(input)
+	inputs = tf.strings.split(inputs)
 
 	# padding 
-	input = tf.cond(pred = tf.math.greater(tf.size(input), max_len),
-		true_fn = lambda: tf.slice(input, begin = [0], size = [max_len]),
-		false_fn = lambda : pad_text(input, max_len))
+	inputs = tf.cond(pred = tf.math.greater(tf.size(inputs), max_len),
+		true_fn = lambda: tf.slice(inputs, begin = [0], size = [max_len]),
+		false_fn = lambda : pad_text(inputs, max_len))
 
 	# check final result
-	#tf.print('split', input, tf.shape(input), tf.size(input))
+	tf.print('split', inputs, tf.shape(inputs), tf.size(inputs))
 
-	return input
+	return inputs
 
 @tf.function
 def pad_text(input, max_len):
@@ -56,24 +56,24 @@ def regex_replace(text):
 	"""
 	regex_replace - function to flatten punctuations and short-forms
 	"""
-	def _func(input):
+	def _func(inputs):
 		"""
 		_func - function to perform regex-replace
 		"""
 		# replace n't with not
-		input = tf.strings.regex_replace(input,
+		inputs = tf.strings.regex_replace(inputs,
 			pattern = "n't",
 			rewrite = " not")
 
 		# replace: 'm, 's, 're with be
-		input = tf.strings.regex_replace(input,
-			pattern = "'s|'re|'m",
+		inputs = tf.strings.regex_replace(inputs,
+			pattern = "\'s|\'re|\'m",
 			rewrite = " be")
 
 		# replace punctuations with [PUNC] mark
-		input = tf.strings.regex_replace(input,
+		inputs = tf.strings.regex_replace(inputs,
 			pattern = "[^a-zA-Z\d\s]",
-			rewrite = " [PUNC]")
+			rewrite = " [PUNC] ")
 
-		return input
+		return inputs
 	return _func(text) if text.dtype.is_compatible_with(tf.string) else tf.constant("")

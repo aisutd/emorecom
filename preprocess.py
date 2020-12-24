@@ -4,6 +4,7 @@ preprocess.py - training module
 
 # import dependencies
 import os
+import re
 import json
 import glob
 import argparse
@@ -103,7 +104,10 @@ def build_vocab(inputs, vocab_name):
 		# regex replace
 		sent = tf.constant(sent)
 		sent = regex_replace(sent).numpy().decode('utf-8')
-		
+
+		# remove trivial whitepsaces
+		sent = re.sub("\s+", " ", sent)
+
 		# add to vocabs
 		vocabs.extend(sent.split())
 
@@ -111,8 +115,9 @@ def build_vocab(inputs, vocab_name):
 	vocabs = list(set(vocabs))
 
 	# add special tokens (similar to BERT WordPiece Tokenizer)
-	vocabs.extend(['[PAD]', '[PUNC]', '[SEP]'])
+	vocabs.extend(['[PAD]', '[SEP]'])
 	vocabs = ['[UNK]'] + vocabs
+
 
 	# write voacbs file
 	with open(vocab_name, 'w') as file:
