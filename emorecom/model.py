@@ -3,7 +3,6 @@ model.py - module for developing model
 """
 
 # import dependencies
-import pickle
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras import Input, Model
@@ -118,8 +117,8 @@ def text(text_shape, vocabs, vocab_size = None, max_len = None, embed_dim = None
 	"""
 
 	# read vocabs
-	with open(vocabs, 'rb') as file:
-		vocabs = pickle.load(file)
+	with open(vocabs) as file:
+		vocabs = file.read().split('\n')[:-1]
 
 	# initialize input
 	inputs = Input(shape = text_shape)

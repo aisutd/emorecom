@@ -16,12 +16,17 @@ def basic_text_proc(input):
 	# lower case
 	input = tf.strings.lower(input)
 
+	# strip whitespaces
+	input = tf.strings.strip(input)
+
 	# flatten punctuations and short-forms
 	input = regex_replace(input)
 
 	# tokenize (split by space)
-	input = tf.strings.split(input)
-	
+	tf.print('basic-text-proc', input)
+	input = tf.map_fn(tf.strings.split, elems = input,
+		fn_output_signature = tf.string)
+
 	return input
 
 @tf.function

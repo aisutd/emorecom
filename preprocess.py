@@ -6,7 +6,6 @@ preprocess.py - training module
 import os
 import json
 import glob
-import pickle
 import argparse
 import pandas as pd
 import tensorflow as tf
@@ -112,8 +111,9 @@ def build_vocab(inputs, vocab_name):
 	vocabs = list(set(vocabs))
 
 	# write voacbs file
-	with open(vocab_name, 'wb') as file:
-		pickle.dump(vocabs, file)
+	with open(vocab_name, 'w') as file:
+		for vocab in vocabs:
+			file.write('%s\n' % vocab)
 
 def main(args):
 	
@@ -163,5 +163,5 @@ if __name__ == '__main__':
 	parser.add_argument('--transcript', type = str, default = os.path.join('warm-up-train', 'train_transcriptions.json'))
 	parser.add_argument('--label', type = str, default = os.path.join('warm-up-train', 'train_emotion_labels.csv'))
 	parser.add_argument('--output', type = str, default = 'train.tfrecords')
-	parser.add_argument('--vocab-name', type =str, default = 'vocabs.pickle')
+	parser.add_argument('--vocab-name', type =str, default = 'vocabs.txt')
 	main(parser.parse_args())
