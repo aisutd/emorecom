@@ -110,6 +110,10 @@ def build_vocab(inputs, vocab_name):
 	# find unique words and sort alphabetically
 	vocabs = list(set(vocabs))
 
+	# add special tokens (similar to BERT WordPiece Tokenizer)
+	vocabs.extend(['[PAD]', '[PUNC]', '[SEP]'])
+	vocabs = ['[UNK]'] + vocabs
+
 	# write voacbs file
 	with open(vocab_name, 'w') as file:
 		for vocab in vocabs:

@@ -66,10 +66,10 @@ def EmbeddingLayer(embed_dim = None, vocabs = None, vocab_size = None, max_len =
 	# retrieve vocab-size
 	# index-0 for out-of-vocab token
 	if vocabs:
-		vocab_size = len(vocabs) + 1
+		vocab_size = len(vocabs)
 	else:
+		# if vocabs not given, then vocab-size must not be None
 		assert vocab_size != None
-		vocab_size += 1
 
 	# load pretrained word-embeddings
 	if pretrained:
@@ -86,7 +86,7 @@ def EmbeddingLayer(embed_dim = None, vocabs = None, vocab_size = None, max_len =
 		embeds = np.random.uniform(size = (vocab_size, embed_dim))
 		
 		# parse words to pretrained word embeddings
-		for text, i in zip(vocabs, range(1, vocab_size + 1)):
+		for i, word in enumerate(vocabs):
 			embed = embed_index.get(word)
 			if embed is not None:
 				embeds[i] = embed
