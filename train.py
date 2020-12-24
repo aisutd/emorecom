@@ -39,13 +39,13 @@ def main():
 	print("Initialize and compile model")
 	MODEL_CONFIGS= {
 		'img_shape' : [224, 224, 3],
-		'text_shape' : [50, 100],
+		'text_shape' : [50],
 		'vocabs' : os.path.join(os.getcwd(), 'dataset', 'vocabs.pickle'),
 		'vocab_size' : None,
-		'text_shape' : [50],
 		'max_len' : None,
-		'embed_dim' : 100,
-		'pretrained_embed' : './glove.twitter.27B/glove.twitter.27B.100d.txt'}
+		'embed_dim' : None,
+		'pretrained_embed' : './glove.twitter.27B/glove.twitter.27B.100d.txt',
+		'num_class' : 8}
 	model = create_model(configs = MODEL_CONFIGS)
 	print(model.summary())
 
@@ -54,7 +54,7 @@ def main():
 	LR = 0.0001
 	OPTIMIZER = optimizers.Adam(learning_rate = LR)
 	LOSS = losses.CategoricalCrossentropy(from_logits = True)
-	METRICS = [metrics.CategoricalAccuracy()]
+	METRICS = [metrics.CategoricalAccuracy(), metrics.Precision(), metrics.Recall()]
 	#model.compile(optimizer = OPTIMZER, loss = LOSS, metrics = METRICS)
 
 	# set hyperparameters
