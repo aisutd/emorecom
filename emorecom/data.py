@@ -16,7 +16,7 @@ class Dataset:
 	Dataset - class to implement Tensorflow Data API
 	"""
 
-	def __init__(self, data_path, vocabs, batch_size = 1, buffer_size = 512, seed = 2021):
+	def __init__(self, data_path, vocabs, max_len, batch_size = 1, buffer_size = 512, seed = 2021):
 		"""
 		Class constructor:
 		Inputs:
@@ -35,9 +35,10 @@ class Dataset:
 		tf.random.set_seed(seed)
 
 		# parse arguments
-		self.data = tf.data.TFRecordDataset(data_path).cache() # cache data
+		self.data = tf.data.TFRecordDataset(data_path) # cache data
 		self.batch_size = batch_size
 		self.buffer_size = buffer_size
+		self.max_len = max_len
 
 		# read vocabs dictionary
 		self.vocabs = self.load_vocabs(vocabs)
@@ -59,8 +60,12 @@ class Dataset:
 			- file : str
 				Path to  vocabulary dictionary
 		"""
-		with open(file, 'rb') as file:
-			vocabs = pickle.load(file)
+
+		initializer =  tf.lookup.TextFileInitializer(filename = file,
+			key_dtype = tf.string, key_index = tf.lookup.TextFileIndex.WHOLE_LINE,
+			value_dtype = tf.int64, value_index = tf.lookup.TextFileIndex.LINE_NUMBER)
+
+		return tf.lookup.StaticHashTable(initializer, default_value = 0)
 
 	def parse_train(self):
 		"""
@@ -92,7 +97,7 @@ class Dataset:
 		def _parse(example):
 			example = tf.io.parse_single_example(example, self.test_features)
 			return {'image' : example['image'], 'transcripts' : example['transcripts']}
-
+		data = data.cache().map(_parse, num_parallel_calls = tf.data.experimental.AUTOTUNE)
 		return data
 
 	@tf.function
@@ -107,7 +112,23 @@ class Dataset:
 		"""
 		process transcripts
 		"""
-		return basic_text_proc(input)
+
+		# split transcripts
+		input = tf.strings.split(input, sep = ';')
+
+		# check split transcripts
+		#tf.print('text', input, tf.size(input), input.shape)
+
+		# processing: lowercase, strip whitepsaces, tokenize, and padding
+		input = tf.map_fn(fn = lambda x: basic_text_proc(x, self.max_len), elems = input,
+			fn_output_signature = tf.string)
+		#tf.print('tokenized', input, tf.size(input), tf.shape(input))
+
+		# decode vocab-index
+		input = self.vocabs.lookup(input)
+		#tf.print("decoded", input, tf.size(input), tf.shape(input))
+
+		return input
 
 	@tf.function
 	def _label(self, input):
@@ -145,12 +166,15 @@ class Dataset:
 		# parse data
 		data = self.parse_train() if training else self.parse_test()
 
-		# batch for batch-processign
+		# batch
 		data = data.batch(self.batch_size)
 
 		# preprocessing image and text
 		func = self.process_train if training else self.process_test
 		data = data.map(func , num_parallel_calls = tf.data.experimental.AUTOTUNE)
+
+		# batching
+		#data = data.batch(self.batch_size)
 
 		# return data
 		return data.prefetch(tf.data.experimental.AUTOTUNE)

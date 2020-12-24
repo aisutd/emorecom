@@ -8,7 +8,7 @@ import string
 import tensorflow as tf
 
 @tf.function
-def basic_text_proc(input):
+def basic_text_proc(input, max_len):
 	"""
 	basic_text_proc - function to perform fundamental text-processing (not considering WordPiece Tokenizer)
 	"""
@@ -22,12 +22,34 @@ def basic_text_proc(input):
 	# flatten punctuations and short-forms
 	input = regex_replace(input)
 
+	# join string together
+	input = tf.strings.reduce_join(input, separator = ' ')
+
 	# tokenize (split by space)
-	tf.print('basic-text-proc', input)
-	input = tf.map_fn(tf.strings.split, elems = input,
-		fn_output_signature = tf.string)
+	#tf.print('basic-text-proc', input, tf.size(input))
+	input = tf.strings.split(input)
+
+	# padding 
+	input = tf.cond(pred = tf.math.greater(tf.size(input), max_len),
+		true_fn = lambda: tf.slice(input, begin = [0], size = [max_len]),
+		false_fn = lambda : pad_text(input, max_len))
+
+	# check final result
+	#tf.print('split', input, tf.shape(input), tf.size(input))
 
 	return input
+
+@tf.function
+def pad_text(input, max_len):
+	"""
+	pad_text - function to pad [PAD] token to string
+	"""
+	paddings = tf.repeat(tf.constant('[PAD]'),
+		repeats = max_len - tf.size(input))
+
+	return tf.concat([input, paddings], axis = 0)
+	
+
 
 @tf.function
 def regex_replace(text):

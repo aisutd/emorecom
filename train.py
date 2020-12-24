@@ -26,15 +26,19 @@ def main():
 	
 	# initialize train-dataset
 	print("Creating Data Loading")
-	vocab_path = os.path.join(os.getcwd(), 'dataset', 'vocabs.pickle')
+	vocab_path = os.path.join(os.getcwd(), 'dataset', 'vocabs.txt')
+	max_len = 128
+	batch_size = 4
 	dataset = Dataset(
 		data_path = train_path, vocabs = vocab_path, 
-		batch_size = 4)
+		max_len = max_len, batch_size = batch_size)
 	train_data = dataset(training = True)
 
 	# test train-dataset
-	images, transcripts, labels = next(iter(train_data))
-	print(images.shape, transcripts, labels.shape)
+	for sample in train_data.take(1):
+		images, transcripts, labels = sample
+		print(images.shape, transcripts.shape, labels.shape)
+		input()
 
 	# initialize model
 	print("Initialize and compile model")
@@ -43,12 +47,12 @@ def main():
 		'text_shape' : [50],
 		'vocabs' : vocab_path,
 		'vocab_size' : None,
-		'max_len' : None,
+		'max_len' : max_len,
 		'embed_dim' : None,
 		'pretrained_embed' : './glove.twitter.27B/glove.twitter.27B.100d.txt',
 		'num_class' : 8}
-	model = create_model(configs = MODEL_CONFIGS)
-	print(model.summary())
+	#model = create_model(configs = MODEL_CONFIGS)
+	#print(model.summary())
 
 	# set hyperparameters
 	# compile model
