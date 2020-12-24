@@ -26,21 +26,22 @@ def main():
 	
 	# initialize train-dataset
 	print("Creating Data Loading")
+	vocab_path = os.path.join(os.getcwd(), 'dataset', 'vocabs.pickle')
 	dataset = Dataset(
-		data_path = train_path,
+		data_path = train_path, vocabs = vocab_path, 
 		batch_size = 4)
 	train_data = dataset(training = True)
 
 	# test train-dataset
-	#sample = next(iter(train_data))
-	#print(sample)
+	images, transcripts, labels = next(iter(train_data))
+	print(images.shape, transcripts, labels.shape)
 
 	# initialize model
 	print("Initialize and compile model")
 	MODEL_CONFIGS= {
 		'img_shape' : [224, 224, 3],
 		'text_shape' : [50],
-		'vocabs' : os.path.join(os.getcwd(), 'dataset', 'vocabs.pickle'),
+		'vocabs' : vocab_path,
 		'vocab_size' : None,
 		'max_len' : None,
 		'embed_dim' : None,

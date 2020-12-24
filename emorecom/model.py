@@ -87,10 +87,10 @@ def EmbeddingLayer(embed_dim = None, vocabs = None, vocab_size = None, max_len =
 		embeds = np.random.uniform(size = (vocab_size, embed_dim))
 		
 		# parse words to pretrained word embeddings
-		for text, i in vocabs.items():
+		for text, i in zip(vocabs, range(1, vocab_size + 1)):
 			embed = embed_index.get(word)
 			if embed is not None:
-				embeds[i + 1] = embed
+				embeds[i] = embed
 
 		initializer = Constant(embeds)
 	else:

@@ -109,8 +109,7 @@ def build_vocab(inputs, vocab_name):
 		vocabs.extend(sent.split())
 
 	# find unique words and sort alphabetically
-	vocabs = sorted(list(set(vocabs)))
-	vocabs = {word : i for i,word in enumerate(vocabs)} # convert list of words to dictionary of word-index
+	vocabs = list(set(vocabs))
 
 	# write voacbs file
 	with open(vocab_name, 'wb') as file:
