@@ -35,7 +35,7 @@ def basic_text_proc(inputs, max_len):
 		false_fn = lambda : pad_text(inputs, max_len))
 
 	# check final result
-	tf.print('split', inputs, tf.shape(inputs), tf.size(inputs))
+	#tf.print('split', inputs, tf.shape(inputs), tf.size(inputs))
 
 	return inputs
 

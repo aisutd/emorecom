@@ -51,8 +51,8 @@ def main():
 		'embed_dim' : None,
 		'pretrained_embed' : './glove.twitter.27B/glove.twitter.27B.100d.txt',
 		'num_class' : 8}
-	#model = create_model(configs = MODEL_CONFIGS)
-	#print(model.summary())
+	model = create_model(configs = MODEL_CONFIGS)
+	print(model.summary())
 
 	# set hyperparameters
 	# compile model
