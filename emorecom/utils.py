@@ -23,7 +23,7 @@ def basic_text_proc(input, max_len):
 	input = regex_replace(input)
 
 	# join string together
-	input = tf.strings.reduce_join(input, separator = ' ')
+	input = tf.strings.reduce_join(input, separator = '[SEP]')
 
 	# tokenize (split by space)
 	#tf.print('basic-text-proc', input, tf.size(input))
