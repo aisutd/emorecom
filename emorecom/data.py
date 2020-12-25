@@ -16,7 +16,7 @@ class Dataset:
 	Dataset - class to implement Tensorflow Data API
 	"""
 
-	def __init__(self, data, vocabs, text_len, image_size, batch_size = 1, buffer_size = 512, seed = 2021):
+	def __init__(self, data, vocabs, text_len, image_size, overlap_ratio = 0.3, batch_size = 1, buffer_size = 512, seed = 2021):
 		"""
 		Class constructor:
 		Inputs:
@@ -28,6 +28,8 @@ class Dataset:
 				Maximum length of text
 			- image_size : tuple of integers
 				Tuple of [height, width]
+			- overlap_ratio float
+				Ratio of overlapping. If smaller, then ignore the cropped image
 			- batch_size : integer
 				Number of smapels/batch
 			- buffer_size : integer
@@ -44,6 +46,7 @@ class Dataset:
 		self.buffer_size = buffer_size
 		self.text_len = text_len
 		self.image_size = image_size
+		self.overlap_ratio = overlap_ratio
 
 		# read vocabs dictionary
 		self.vocabs = self.load_vocabs(vocabs)
@@ -87,7 +90,7 @@ class Dataset:
 			# read image
 			example['image'] = tf.io.read_file(example['image'])
 
-			return {'image' : example['image'], 'transcripts' : example['transcripts'], 'label' : example['label']}
+			return {'image' : example['image'], 'transcripts' : example['transcripts'], 'labels' : example['label']}
 		data = data.cache().map(_parse, num_parallel_calls = tf.data.experimental.AUTOTUNE)
 
 		return data
@@ -112,7 +115,7 @@ class Dataset:
 		"""
 
 		# process image
-		image = tf.map_fn(fn = lambda img : image_proc(img, size = self.image_size),
+		image = tf.map_fn(fn = lambda img : image_proc(img, size = self.image_size, overlap_ratio = self.overlap_ratio),
 			elems = image, fn_output_signature = tf.float32)
 
 		return image
@@ -159,7 +162,8 @@ class Dataset:
 		"""
 		process_train - function to preprocess image, text, and label
 		"""
-		return self._image(sample['image']), self._transcripts(sample['transcripts']),self._label(sample['label'])
+		tf.print(tf.shape(sample['image']))
+		return self._image(sample['image']), self._transcripts(sample['transcripts']),self._label(sample['labels'])
 
 	@tf.function
 	def process_test(self, sample):
@@ -182,10 +186,10 @@ class Dataset:
 
 		# preprocessing image and text
 		func = self.process_train if training else self.process_test
-		data = data.map(func , num_parallel_calls = tf.data.experimental.AUTOTUNE)
+		data = data.map(func, num_parallel_calls = tf.data.experimental.AUTOTUNE)
 
 		# batching
 		#data = data.batch(self.batch_size)
 
 		# return data
-		return data.prefetch(tf.data.experimental.AUTOTUNE)
+		return data#.prefetch(tf.data.experimental.AUTOTUNE)

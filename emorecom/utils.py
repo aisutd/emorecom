@@ -9,7 +9,7 @@ import tensorflow as tf
 
 """------------------------------image-processing-------------------------------------------"""
 @tf.function
-def image_proc(image, size):
+def image_proc(image, size, overlap_ratio):
 	"""
 	image_proc - function to process image while training. Up to designs
 	Inputs:
@@ -22,18 +22,21 @@ def image_proc(image, size):
 	# load image
 	image = tf.io.decode_image(image, dtype = tf.float32)
 
-	# resize
-	image = tf.image.resize_with_crop_or_pad(image, size[0], size[1])
+	# resize iamge
+	#image = tf.image.resize_with_crop_or_pad(image, size[0], size[1])
 
 	# split image to chunks
-	#image = image_to_chunks(image, size[0], size[1])
+	image = image_to_chunks(image, size[0], size[1], overlap_ratio)
+
+	# resize image
+	image = tf.image.resize_with_crop_or_pad(image, size[0], size[1])
 
 	# standarize
 	image = tf.image.per_image_standardization(image)
 
 	return image
 
-def image_to_chunks(image, height, width):
+def image_to_chunks(image, height, width, overlap_ratio):
 	"""
 	image_to_chunks - split a large image to smaller images
 	Inputs:
@@ -45,21 +48,60 @@ def image_to_chunks(image, height, width):
 			Target width
 	"""
 
-	"""----cut-images-into-smaller-chunks"""
-	img_h, img_w, _ = tf.shape(image)
-	h_indices = tf.range(0, img_h, size[0], dtype = tf.int32)
-	w_indices = tf.range(0, img_w, size[1], dtype = tf.int32)
-	box_indices = tf.stack([h_indices, w_indices], axis = -1)
+	"""----cut-images-into-smaller-chunks-vertically-----"""
+	img_shape = tf.shape(image)
+	img_h, img_w = img_shape[0], img_shape[1]
 
+	def _crop():
+		"""
+		_crop - function to split images into smaller chunks.
+			If height > ratio x width, then split by height. And vice versa
+			Default, split by horizontally
+		"""
+		if img_h > 2 * img_w:
+			# split by height
+			num_split = tf.cast(tf.math.ceil(img_h / height), dtype = tf.int32)
+			delta = tf.cast(tf.math.round(img_h / num_split), dtype = tf.int32)
+			outputs = tf.zeros([1, height, width, 3])
+			cond = lambda idx, o: idx < num_split
+			body = lambda idx, o: [idx + 1, tf.concat([o,
+					tf.expand_dims(crop_and_pad(image, img_h, img_w, idx * delta, (idx + 1) * delta, 0, width, height, width), axis = 0)], axis = 0)]
+			_, outputs = tf.while_loop(cond = cond, body = body,
+				loop_vars = [0, outputs], shape_invariants = [None, tf.TensorShape([None, height, width, 3])])
+			return outputs #[1:]
+		else:
+			# split by width
+			num_split = tf.cast(tf.math.ceil(img_w / width), dtype = tf.int32)
+			delta = tf.cast(tf.math.round(img_w / num_split), dtype = tf.int32)
+
+			outputs = tf.zeros([1, height, width, 3])
+			cond = lambda idx, o: idx < num_split
+			body = lambda idx, o: [idx + 1, tf.concat([o,
+					tf.expand_dims(crop_and_pad(image, img_h, img_w, 0, height, idx * delta, (idx + 1) * delta, height, width), axis = 0)], axis = 0)]
+			_, outputs = tf.while_loop(cond = cond, body = body,
+				loop_vars = [0, outputs], shape_invariants = [None, tf.TensorShape([None, height, width, 3])])
+
+			return outputs#[1:]
+
+	img = tf.cond(pred = tf.math.logical_and(tf.math.less(img_h, height), tf.math.less(img_w, width)),
+		true_fn = lambda: tf.image.resize_with_pad(image, height, width),
+		false_fn = lambda: _crop())
+
+	tf.print(tf.shape(img), tf.shape(image))
 	return image
 
-def crop_and_pad(image, img_h, img_w, h_offset, w_offset, height, width):
+@tf.function
+def crop_and_pad(image, img_h, img_w, x1, x2, y1, y2, height, width):
 	"""
 	crop_and_pad - function top crop image to the desired size and pad them if necessary
 	"""
 
-	#image = image[h_offset:tf.math.maximum(h_offset + height, img_h), w_offset:tf.math.maxmumw_offset + width, img_w), :]
+	# crop
+	image = image[x1:tf.math.minimum(x2, img_h),
+		y1:tf.math.minimum(y2, img_w), :]
 
+	# resize 
+	image = tf.image.resize_with_crop_or_pad(image, height, width)
 	return image
 
 """------------------------------text-processing-------------------------------------------"""

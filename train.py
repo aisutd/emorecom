@@ -34,9 +34,14 @@ def main(args):
 	train_data = dataset(training = True)
 
 	# test train-dataset
+	images, transcripts, labels = next(iter(train_data))
+	print(images.shape, transcripts.shape, labels.shape)
+	"""
 	for sample in train_data.take(1):
 		images, transcripts, labels = sample
 		print(images.shape, transcripts.shape, labels.shape)
+		break
+	"""
 
 	# initialize model
 	print("Initialize and compile model")
@@ -93,5 +98,5 @@ if __name__ == '__main__':
 	parser.add_argument('--validation-data', type = str, default = 'dataset/validation.tfrecords')
 	parser.add_argument('--logdir', type = str, default = 'logs')
 	parser.add_argument('--checkpoint-dir', type = str, default = 'checkpoints')
-	parser.add_argument('--pretrained-embedding', type = str, default = None)
+	parser.add_argument('--pretrained-embedding', type = str, default = 'glove.twitter.27B/glove.twitter.27B.100d.txt')
 	main(parser.parse_args())
