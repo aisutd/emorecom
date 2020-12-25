@@ -19,8 +19,7 @@ def create_model(configs):
 	vision_model = vision(img_shape = configs['img_shape'])
 
 	# text
-	text_model = text(text_shape = configs['text_shape'],
-		vocabs = configs['vocabs'], max_len = configs['max_len'],
+	text_model = text(text_len = configs['text_len'], vocabs = configs['vocabs'],
 		vocab_size = configs['vocab_size'], embed_dim = configs['embed_dim'],
 		pretrained_embed = configs['pretrained_embed'])
 
@@ -100,18 +99,16 @@ def EmbeddingLayer(embed_dim = None, vocabs = None, vocab_size = None, max_len =
 		embeddings_initializer = initializer,
 		embeddings_regularizer = None)
 	
-def text(text_shape, vocabs, vocab_size = None, max_len = None, embed_dim = None, pretrained_embed = None):
+def text(text_len = None, vocabs = None, vocab_size = None, embed_dim = None, pretrained_embed = None):
 	"""
 	text - function to create textual module
 	Inputs:
-		- text_shape : tuple of integers
-			(max_seq_length, embedding_size)
+		- text_len : integer
+			Max length of text, default = None
 		- vocabs : str
 			Path to dictionary file
 		- vocab_size : integer
 			Number of vocabs, None by default
-		- max_len : integer, None by defualt
-			Maximum length of the input
 		- pretrained_embed : str, None by default
 			Path to the pretrained embedding file
 	"""
@@ -121,11 +118,11 @@ def text(text_shape, vocabs, vocab_size = None, max_len = None, embed_dim = None
 		vocabs = file.read().split('\n')[:-1]
 
 	# initialize input
-	inputs = Input(shape = text_shape)
+	inputs = Input(shape = [text_len])
 
 	# initializer Embedding layer
 	embeddings = EmbeddingLayer(embed_dim = embed_dim, vocabs = vocabs,
-		vocab_size = vocab_size, max_len = max_len, pretrained = pretrained_embed)(inputs)
+		vocab_size = vocab_size, max_len = text_len, pretrained = pretrained_embed)(inputs)
 
 	# bidirectional-lstm
 	outputs = BiLSTM(128, 128)(embeddings)

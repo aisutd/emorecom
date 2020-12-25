@@ -9,21 +9,25 @@ import pickle
 import tensorflow as tf
 
 # import local packages
-from emorecom.utils import basic_text_proc
+from emorecom.utils import text_proc, image_proc
 
 class Dataset:
 	"""
 	Dataset - class to implement Tensorflow Data API
 	"""
 
-	def __init__(self, data_path, vocabs, max_len, batch_size = 1, buffer_size = 512, seed = 2021):
+	def __init__(self, data, vocabs, text_len, image_size, batch_size = 1, buffer_size = 512, seed = 2021):
 		"""
 		Class constructor:
 		Inputs:
-			- data_path : str or list of str
+			- data : str or list of str
 				Path(s) to TFRecord dataset
 			- vocabs : str
 				Path to vocabs dictionary
+			- text_len : integer
+				Maximum length of text
+			- image_size : tuple of integers
+				Tuple of [height, width]
 			- batch_size : integer
 				Number of smapels/batch
 			- buffer_size : integer
@@ -35,10 +39,11 @@ class Dataset:
 		tf.random.set_seed(seed)
 
 		# parse arguments
-		self.data = tf.data.TFRecordDataset(data_path) # cache data
+		self.data = tf.data.TFRecordDataset(data) # cache data
 		self.batch_size = batch_size
 		self.buffer_size = buffer_size
-		self.max_len = max_len
+		self.text_len = text_len
+		self.image_size = image_size
 
 		# read vocabs dictionary
 		self.vocabs = self.load_vocabs(vocabs)
@@ -101,11 +106,16 @@ class Dataset:
 		return data
 
 	@tf.function
-	def _image(self, input):
+	def _image(self, image):
 		"""
 		process image
 		"""
-		return input
+
+		# process image
+		image = tf.map_fn(fn = lambda img : image_proc(img, size = self.image_size),
+			elems = image, fn_output_signature = tf.float32)
+
+		return image
 
 	@tf.function
 	def _transcripts(self, input):
@@ -120,7 +130,7 @@ class Dataset:
 		#tf.print('text', input, tf.size(input), input.shape)
 
 		# processing: lowercase, strip whitepsaces, tokenize, and padding
-		input = tf.map_fn(fn = lambda x: basic_text_proc(x, self.max_len), elems = input,
+		input = tf.map_fn(fn = lambda x: text_proc(x, self.text_len), elems = input,
 			fn_output_signature = tf.string)
 		#tf.print('tokenized', input, tf.size(input), tf.shape(input))
 
@@ -141,6 +151,7 @@ class Dataset:
 
 		# convert str to integer
 		input = tf.strings.to_number(input, out_type = tf.int32)
+
 		return input
 
 	@tf.function
