@@ -22,11 +22,9 @@ def image_proc(image, size, overlap_ratio):
 	# load image
 	image = tf.io.decode_image(image, dtype = tf.float32)
 
-	# resize iamge
-	#image = tf.image.resize_with_crop_or_pad(image, size[0], size[1])
-
+	# not implemented
 	# split image to chunks
-	image = image_to_chunks(image, size[0], size[1], overlap_ratio)
+	#image = image_to_chunks(image, size[0], size[1], overlap_ratio)
 
 	# resize image
 	image = tf.image.resize_with_crop_or_pad(image, size[0], size[1])
@@ -88,7 +86,7 @@ def image_to_chunks(image, height, width, overlap_ratio):
 		false_fn = lambda: _crop())
 
 	tf.print(tf.shape(img), tf.shape(image))
-	return image
+	return img
 
 @tf.function
 def crop_and_pad(image, img_h, img_w, x1, x2, y1, y2, height, width):

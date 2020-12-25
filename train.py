@@ -34,14 +34,12 @@ def main(args):
 	train_data = dataset(training = True)
 
 	# test train-dataset
-	images, transcripts, labels = next(iter(train_data))
-	print(images.shape, transcripts.shape, labels.shape)
-	"""
+	#images, transcripts, labels = next(iter(train_data))
+	#print(labels)
+	#print(images.shape, transcripts.shape, labels.shape)
 	for sample in train_data.take(1):
-		images, transcripts, labels = sample
+		images , transcripts, labels = sample
 		print(images.shape, transcripts.shape, labels.shape)
-		break
-	"""
 
 	# initialize model
 	print("Initialize and compile model")

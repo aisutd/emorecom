@@ -90,7 +90,7 @@ class Dataset:
 			# read image
 			example['image'] = tf.io.read_file(example['image'])
 
-			return {'image' : example['image'], 'transcripts' : example['transcripts'], 'labels' : example['label']}
+			return example['image'], example['transcripts'], example['label']
 		data = data.cache().map(_parse, num_parallel_calls = tf.data.experimental.AUTOTUNE)
 
 		return data
@@ -104,7 +104,7 @@ class Dataset:
 		@tf.function
 		def _parse(example):
 			example = tf.io.parse_single_example(example, self.test_features)
-			return {'image' : example['image'], 'transcripts' : example['transcripts']}
+			return example['image'], example['transcripts']
 		data = data.cache().map(_parse, num_parallel_calls = tf.data.experimental.AUTOTUNE)
 		return data
 
@@ -114,9 +114,13 @@ class Dataset:
 		process image
 		"""
 
+		print(image, image.shape)
 		# process image
 		image = tf.map_fn(fn = lambda img : image_proc(img, size = self.image_size, overlap_ratio = self.overlap_ratio),
 			elems = image, fn_output_signature = tf.float32)
+
+		# below is for non-batching
+		#imgae = image_proc(image, size = self.image_size, overlap_ratio = self.overlap_ratio)
 
 		return image
 
@@ -157,13 +161,13 @@ class Dataset:
 
 		return input
 
-	@tf.function
+	#@tf.function
 	def process_train(self, sample):
 		"""
 		process_train - function to preprocess image, text, and label
 		"""
-		tf.print(tf.shape(sample['image']))
-		return self._image(sample['image']), self._transcripts(sample['transcripts']),self._label(sample['labels'])
+		return self._image(sample[0]), self._transcripts(sample[1]), self._label(sample[2])
+		#return self._image(sample['image']), self._transcripts(sample['transcripts']),self._label(sample['labels'])
 
 	@tf.function
 	def process_test(self, sample):
@@ -185,11 +189,12 @@ class Dataset:
 		data = data.batch(self.batch_size)
 
 		# preprocessing image and text
-		func = self.process_train if training else self.process_test
-		data = data.map(func, num_parallel_calls = tf.data.experimental.AUTOTUNE)
-
-		# batching
-		#data = data.batch(self.batch_size)
+		if training:
+			data = data.map(lambda image, transcripts, labels: [self._image(image), self._transcripts(transcripts), self._label(labels)],
+				num_parallel_calls = tf.data.experimental.AUTOTUNE)
+		else:
+			data = data.map(lambda image, transcripts: [self._image(image), self._transcripts(transcripts)],
+				num_parallel_calls = tf.data.experimental.AUTOTUNE)
 
 		# return data
 		return data#.prefetch(tf.data.experimental.AUTOTUNE)
