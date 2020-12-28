@@ -89,8 +89,8 @@ class Dataset:
 
 			# read image
 			example['image'] = tf.io.read_file(example['image'])
-
-			return example['image'], example['transcripts'], example['label']
+		
+			return {'image' : example['image'], 'transcripts' : example['transcripts']}, example['label']
 		data = data.cache().map(_parse, num_parallel_calls = tf.data.experimental.AUTOTUNE)
 
 		return data
@@ -156,16 +156,16 @@ class Dataset:
 		input = tf.strings.split(input, sep = ',')
 
 		# convert str to integer
-		input = tf.strings.to_number(input, out_type = tf.int32)
+		input = tf.strings.to_number(input, out_type = tf.int32).to_tensor()
 
 		return input
 
 	#@tf.function
-	def process_train(self, image, transcripts, labels):
+	def process_train(self, features, labels):
 		"""
 		process_train - function to preprocess image, text, and label
 		"""
-		return self._image(image), self._transcripts(transcripts), self._label(labels)
+		return {'image' : self._image(features['image']), 'transcripts' : self._transcripts(features['transcripts'])}, self._label(labels)
 
 	@tf.function
 	def process_test(self, image, transcripts):
@@ -188,15 +188,14 @@ class Dataset:
 
 		# preprocessing image and text
 		func = self.process_train if training else self.process_test
-		data = data.map(lambda image, transcripts, labels: func(image, transcripts, labels), num_parallel_calls = tf.data.experimental.AUTOTUNE)
+		data = data.map(lambda features, labels: func(features, labels), num_parallel_calls = tf.data.experimental.AUTOTUNE)
 		"""
 		if training:
-			data = data.map(lambda image, transcripts, labels: [self._image(image), self._transcripts(transcripts), self._label(labels)],
+			data = data.map(lambda image, transcripts, labels: ([self._image(image), self._transcripts(transcripts)], self._label(labels)),
 				num_parallel_calls = tf.data.experimental.AUTOTUNE)
 		else:
 			data = data.map(lambda image, transcripts: [self._image(image), self._transcripts(transcripts)],
 				num_parallel_calls = tf.data.experimental.AUTOTUNE)
 		"""
 
-		# return data
-		return data#.prefetch(tf.data.experimental.AUTOTUNE)
+		return data.prefetch(tf.data.experimental.AUTOTUNE)
