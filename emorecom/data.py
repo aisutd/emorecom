@@ -103,8 +103,11 @@ class Dataset:
 		# read data
 		@tf.function
 		def _parse(example):
+			
+			# read image
 			example = tf.io.parse_single_example(example, self.test_features)
-			return example['image'], example['transcripts']
+
+			return {'image' : example['image'], 'transcripts' : example['transcripts']}
 		data = data.cache().map(_parse, num_parallel_calls = tf.data.experimental.AUTOTUNE)
 		return data
 
@@ -165,15 +168,16 @@ class Dataset:
 		"""
 		process_train - function to preprocess image, text, and label
 		"""
+
 		return {'image' : self._image(features['image']), 'transcripts' : self._transcripts(features['transcripts'])}, self._label(labels)
 
 	@tf.function
-	def process_test(self, image, transcripts):
+	def process_test(self, features):
 		"""
 		process_test - function to preprocess image and text only
 		"""
 
-		return self._image(image), self._transcripts(transripts)
+		return {'image' : self._image(features['image']), 'transcripts' : self._transcripts(features['transripts'])}
 
 	def __call__(self, training = False):
 		"""
@@ -188,14 +192,11 @@ class Dataset:
 
 		# preprocessing image and text
 		func = self.process_train if training else self.process_test
-		data = data.map(lambda features, labels: func(features, labels), num_parallel_calls = tf.data.experimental.AUTOTUNE)
-		"""
 		if training:
-			data = data.map(lambda image, transcripts, labels: ([self._image(image), self._transcripts(transcripts)], self._label(labels)),
+			data = data.map(lambda features, labels: self.process_train(features, labels),
 				num_parallel_calls = tf.data.experimental.AUTOTUNE)
 		else:
-			data = data.map(lambda image, transcripts: [self._image(image), self._transcripts(transcripts)],
+			data = data.map(lambda feature: self.process_test(features),
 				num_parallel_calls = tf.data.experimental.AUTOTUNE)
-		"""
 
 		return data.prefetch(tf.data.experimental.AUTOTUNE)
