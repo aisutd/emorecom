@@ -7,7 +7,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras import Input, Model
 from tensorflow.keras.initializers import Constant
-from tensorflow.keras.layers import Conv1D, Dropout, BatchNormalization, Dense, Flatten, LSTM, Bidirectional, Embedding
+from tensorflow.keras.layers import GlobalAveragePooling1D, Conv2D, Dropout, BatchNormalization, Dense, Flatten, LSTM, Bidirectional, Embedding
 
 # set random seed
 tf.random.set_seed(2021)
@@ -24,19 +24,22 @@ def create_model(configs):
 		pretrained_embed = configs['pretrained_embed'])
 
 	# fuse visiual and textual features
-	vision_features = Conv1D(256, kernel_size = 3, strides = 1, activation = 'relu')(vision_model.outputs[0])
-	shape = tf.shape(vision_features)
-	vision_features = tf.reshape(vision_features, shape = [shape[0], -1, shape[-1]])
+	vision_features = Conv2D(256, kernel_size = 3, strides = 1, activation = 'relu')(vision_model.outputs[0])
+	vision_shape = tf.shape(vision_features)
+	vision_features = tf.reshape(vision_features, shape = [vision_shape[0], vision_shape[1] * vision_shape[2], vision_shape[-1]])
 
 	outputs = tf.concat([vision_features, text_model.outputs[0]], axis = 1,
 		name = 'fusion-concat')
+
+	# select max-features
+	outputs = GlobalAveragePooling1D()(outputs)
 
 	# classfication module
 	outputs = Dense(128, activation = 'relu')(outputs)
 	outputs = Dropout(0.2)(outputs)
 	outputs = Dense(64, activation = 'relu')(outputs)
 
-	outputs = Dense(configs['num_class'])(outputs)
+	outputs = Dense(configs['num_class'], activation = 'softmax', )(outputs)
 	return Model(inputs = [vision_model.inputs, text_model.inputs],
 		outputs = outputs)
 
@@ -47,7 +50,7 @@ def vision(img_shape):
 		- img_shape : tuple of integers
 			[width, height, channel]
 	"""
-	inputs = Input(shape = img_shape)
+	inputs = Input(shape = img_shape, name = 'image')
 
 	outputs = tf.keras.applications.ResNet50(include_top = False,
 		weights = 'imagenet', input_shape = img_shape)(inputs)
@@ -118,7 +121,7 @@ def text(text_len = None, vocabs = None, vocab_size = None, embed_dim = None, pr
 		vocabs = file.read().split('\n')[:-1]
 
 	# initialize input
-	inputs = Input(shape = [text_len])
+	inputs = Input(shape = [text_len], name = 'transcripts')
 
 	# initializer Embedding layer
 	embeddings = EmbeddingLayer(embed_dim = embed_dim, vocabs = vocabs,

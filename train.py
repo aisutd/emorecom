@@ -38,8 +38,8 @@ def main(args):
 	#print(labels)
 	#print(images.shape, transcripts.shape, labels.shape)
 	for sample in train_data.take(1):
-		images , transcripts, labels = sample
-		print(images.shape, transcripts.shape, labels.shape)
+		features, labels = sample
+		print(features['image'].shape, features['transcripts'].shape, labels)
 
 	# initialize model
 	print("Initialize and compile model")
@@ -50,16 +50,16 @@ def main(args):
 		'embed_dim' : args.embedding_dim,
 		'pretrained_embed' : os.path.join(DIR_PATH, args.pretrained_embedding),
 		'num_class' : args.num_class}
-	#model = create_model(configs = MODEL_CONFIGS)
-	#print(model.summary())
+	model = create_model(configs = MODEL_CONFIGS)
+	print(model.summary())
 
 	# set hyperparameters
 	OPTIMIZER = optimizers.Adam(learning_rate = args.learning_rate)
-	LOSS = losses.CategoricalCrossentropy(from_logits = True)
+	LOSS = losses.CategoricalCrossentropy(from_logits = False)
 	METRICS = [metrics.CategoricalAccuracy(), metrics.Precision(), metrics.Recall()]
 
 	# compile model
-	#model.compile(optimizer = OPTIMZER, loss = LOSS, metrics = METRICS)
+	model.compile(optimizer = OPTIMIZER, loss = LOSS, metrics = METRICS)
 
 	# set hyperparameters
 	print("Start training")
@@ -69,11 +69,11 @@ def main(args):
 		callbacks.TensorBoard(log_dir = LOG_DIR, write_images = True),
 		callbacks.ModelCheckpoint(filepath = CHECKPOINT_PATH, monitor = 'val_loss', verbose = 1, save_best_only = True, mode = 'min')]
 	STEPS_PER_EPOCH = None
-	#model.fit(train_data, verbose = 1, callbacks = CALLBACKS, epochs = args.epochs,
-	#	steps_per_epoch = STEPS_PER_EPOCH)
+	model.fit(train_data, verbose = 1, callbacks = CALLBACKS, epochs = args.epochs,
+		steps_per_epoch = STEPS_PER_EPOCH)
 
 	# save model
-	#model_path = experiment
+	#model_path = os.path.join(DEFAULT_DIR, args.models, args.experiment_name)
 	#tf.saved_model.save(model, model_path)
 
 if __name__ == '__main__':
@@ -97,4 +97,5 @@ if __name__ == '__main__':
 	parser.add_argument('--logdir', type = str, default = 'logs')
 	parser.add_argument('--checkpoint-dir', type = str, default = 'checkpoints')
 	parser.add_argument('--pretrained-embedding', type = str, default = 'glove.twitter.27B/glove.twitter.27B.100d.txt')
+	parser.add_argument('--output', type = str, default = 'models')
 	main(parser.parse_args())
