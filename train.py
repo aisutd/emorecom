@@ -67,14 +67,14 @@ def main(args):
 	CHECKPOINT_PATH = os.path.join(DIR_PATH, args.checkpoint_dir, args.experiment_name)
 	CALLBACKS = [
 		callbacks.TensorBoard(log_dir = LOG_DIR, write_images = True),
-		callbacks.ModelCheckpoint(filepath = CHECKPOINT_PATH, monitor = 'val_loss', verbose = 1, save_best_only = True, mode = 'min')]
+		callbacks.ModelCheckpoint(filepath = CHECKPOINT_PATH, monitor = 'val_loss', verbose = 1, save_best_only = False, mode = 'min')]
 	STEPS_PER_EPOCH = None
 	model.fit(train_data, verbose = 1, callbacks = CALLBACKS, epochs = args.epochs,
 		steps_per_epoch = STEPS_PER_EPOCH)
 
 	# save model
-	#model_path = os.path.join(DEFAULT_DIR, args.models, args.experiment_name)
-	#tf.saved_model.save(model, model_path)
+	model_path = os.path.join(DIR_PATH, args.saved_models, args.experiment_name)
+	tf.saved_model.save(model, model_path)
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
@@ -97,5 +97,5 @@ if __name__ == '__main__':
 	parser.add_argument('--logdir', type = str, default = 'logs')
 	parser.add_argument('--checkpoint-dir', type = str, default = 'checkpoints')
 	parser.add_argument('--pretrained-embedding', type = str, default = 'glove.twitter.27B/glove.twitter.27B.100d.txt')
-	parser.add_argument('--output', type = str, default = 'models')
+	parser.add_argument('--saved-models', type = str, default = 'saved_models')
 	main(parser.parse_args())
