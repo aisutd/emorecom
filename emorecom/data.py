@@ -85,7 +85,7 @@ class Dataset:
 			- data : Tensor Dataset
 		"""
 		# shuffle data
-		data = self.data.shuffle(buffer_size = self.buffer_size, reshuffle_each_iteratino = True)
+		data = self.data.shuffle(buffer_size = self.buffer_size, reshuffle_each_iteration = True)
 
 		# read data
 		@tf.function

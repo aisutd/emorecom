@@ -39,7 +39,7 @@ def main(args):
 	#print(images.shape, transcripts.shape, labels.shape)
 	for sample in train_data.take(1):
 		features, labels = sample
-		print(features['image'].shape, features['transcripts'].shape, labels)
+		print(features['image'].shape, features['transcripts'], labels)
 
 	# initialize model
 	print("Initialize and compile model")
@@ -67,7 +67,7 @@ def main(args):
 	CHECKPOINT_PATH = os.path.join(DIR_PATH, args.checkpoint_dir, args.experiment_name)
 	CALLBACKS = [
 		callbacks.TensorBoard(log_dir = LOG_DIR, write_images = True),
-		callbacks.ModelCheckpoint(filepath = CHECKPOINT_PATH, monitor = 'val_loss', verbose = 1, save_best_only = False, mode = 'min')]
+		callbacks.ModelCheckpoint(filepath = CHECKPOINT_PATH, monitor = 'val_loss', verbose = 1, save_best_only = True, mode = 'min')]
 	STEPS_PER_EPOCH = None
 	model.fit(train_data, verbose = 1, callbacks = CALLBACKS, epochs = args.epochs,
 		steps_per_epoch = STEPS_PER_EPOCH)
