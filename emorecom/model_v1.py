@@ -32,7 +32,8 @@ def create_model(configs):
 		pretrained_embed = configs['pretrained_embed'])
 
 	# fuse visiual and textual features
-	vision_features = Conv2D(200, kernel_size = 3, strides = 1, activation = 'relu', padding = 'same')(vision_model.outputs[0])
+	vision_features = Conv2D(512, kernel_size = 3, strides = 1, activation = 'relu', padding = 'same')(vision_model.outputs[0])
+	vision_features = Conv2D(100, kernel_size = 3, strides = 1, activation = 'relu', padding = 'same')(vision_features)
 	vision_shape = tf.shape(vision_features)
 	tf.print("vision features {}".format(vision_features.shape))
 	vision_features = tf.reshape(vision_features, shape = [vision_shape[0], vision_shape[1] * vision_shape[2], vision_shape[-1]])
@@ -45,8 +46,8 @@ def create_model(configs):
 	outputs = GlobalAveragePooling1D()(outputs)
 
 	# classfication module
-	#outputs = Dense(128, activation = 'relu')(outputs)
-	#outputs = Dense(64, activation = 'relu')(outputs)
+	outputs = Dense(128, activation = 'relu')(outputs)
+	outputs = Dense(64, activation = 'relu')(outputs)
 	outputs = Dense(configs['num_class'], activation = 'softmax', )(outputs)
 	return Model(inputs = [vision_model.inputs, text_model.inputs],
 		outputs = outputs)
@@ -167,7 +168,7 @@ def text(text_len = None, vocabs = None, vocab_size = None, embed_dim = None, pr
 		vocab_size = vocab_size, max_len = text_len, pretrained = pretrained_embed)(inputs)
 
 	# bidirectional-lstm
-	outputs = BiLSTM(100, 100)(embeddings)
+	outputs = BiLSTM(50, 50)(embeddings)
 	#outputs = BiLSTM(50, 100)(outputs)
 
 	return Model(inputs = inputs, outputs = outputs)
