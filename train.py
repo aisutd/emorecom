@@ -75,9 +75,6 @@ def main(args):
 	# save model
 	model_path = os.path.join(DIR_PATH, args.saved_models, args.experiment_name)
 	tf.saved_model.save(model, model_path)
-	tf.keras.utils.plot_model(
-		model, to_file=model_path + '.png', show_shapes=False, show_dtype=False,
-		show_layer_names=True, rankdir='TB', expand_nested=False, dpi=96)
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
