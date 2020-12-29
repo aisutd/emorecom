@@ -146,8 +146,8 @@ def main(args):
 	# concat images, transcripts, and labels (if training is True)
 	if args.training:
 		print("Concat images, transcripts, and labels")
-		#train_concat(output, image_path, transcripts, labels)
-		#test(output)
+		train_concat(output, image_path, transcripts, labels)
+		test(output)
 	else:
 		print("Concat images and transcripts")
 		#test_concat(output, image_path, transcripts)
