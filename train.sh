@@ -8,4 +8,4 @@ python3 train.py --experiment-name model-1 --num-class 8 \
 --train-data dataset/train.tfrecords \
 --logdir logs --checkpoint-dir checkpoints \
 --pretrained-embedding glove.twitter.27B/glove.twitter.27B.100d.txt \
---saved-models 'saved_models'
+--saved_models 'saved_models'
