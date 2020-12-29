@@ -7,5 +7,5 @@ python3 train.py --experiment-name model-1 --num-class 8 \
 --epochs 10 --vocab-size None --vocabs dataset/vocabs.txt \
 --train-data dataset/train.tfrecords \
 --logdir logs --checkpoint-dir checkpoints \
---pretrained-embedding glove.twitter.27B/glove.twitter.27B.100d.txt
+--pretrained-embedding glove.twitter.27B/glove.twitter.27B.100d.txt \
 --saved_models 'saved_models'
