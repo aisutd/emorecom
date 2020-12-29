@@ -48,7 +48,7 @@ def create_model(configs):
 	outputs = Dense(100, activation = 'relu')(outputs)
 	outputs = Flatten()(outputs)
 	outputs = Dense(50, activation = 'relu')(outputs)
-	outputs = Dense(configs['num_class'], activation = 'softmax')(outputs)
+	outputs = Dense(configs['num_class'], activation = 'sigmoid')(outputs)
 	return Model(inputs = [vision_model.inputs, text_model.inputs],
 		outputs = outputs)
 
