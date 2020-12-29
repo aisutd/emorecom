@@ -11,7 +11,7 @@
 
 ## Setup and install datasts
 * This repo assumed that Tensorflow is installed successfully and run smoothly on your system (support Tensorflow >= 2.0.0).
-* Initializee settings
+* Initialize settings
 ```
 pip3 install gdown
 pip3 install -r requirements.txt
@@ -29,7 +29,15 @@ python3 preprocess.py --training True --image warm-up-train/train --transcript w
 # for testing dataset
 python3 preprocess.py --training False --image warm-up-test/test --transcript warm-up-test/test_transcriptions.json --out test.tfrecords
 ```
+* Install Glove Word-Embeddings
+```
+bash download_twitter_glove_we.sh
+```
 * Training
+```
+# check train.sh for additional arguments
+bash train.sh
+```
 * Inference
 
 ---
