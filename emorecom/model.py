@@ -14,6 +14,14 @@ tf.random.set_seed(2021)
 np.random.seed(seed = 2021)
 
 def create_model(configs):
+	"""
+	create_model - function to create Visual-Textual model for Emotion Recognitin on Comic Scenes
+	Inputs:
+		- configs : dict
+			Dicitonary of model configurations
+	Outputs:
+		- _ : Tensorflow Keras Model
+	"""
 
 	# vision
 	vision_model = vision(img_shape = configs['img_shape'])
@@ -49,6 +57,8 @@ def vision(img_shape):
 	Inputs:
 		- img_shape : tuple of integers
 			[width, height, channel]
+	Outputs:
+		- _ : Tensorflow Keras Model
 	"""
 	inputs = Input(shape = img_shape, name = 'image')
 
@@ -58,12 +68,37 @@ def vision(img_shape):
 	return Model(inputs = inputs, outputs = outputs)
 
 def BiLSTM(forward_units, backward_units):
+	"""
+	BiLSTM - function to create the Bidirection-LSTM layer
+	Inputs:
+		- forward_units : integer
+			Number of units for the forward direction
+		- bachward_units : integer
+			Number of units for the baackward direction
+	Outputs:
+		- _ : Tensorflow Keras Layer - Bidirectional object
+	"""
 	forward = LSTM(forward_units, return_sequences = True)
 	backward = LSTM(backward_units, return_sequences = True, go_backwards = True)
 
 	return Bidirectional(layer = forward, backward_layer = backward, merge_mode = 'concat')
 
 def EmbeddingLayer(embed_dim = None, vocabs = None, vocab_size = None, max_len = None, pretrained = None):
+	"""
+	EmbeddingLayer - function to initializer Embedding layer
+	Inputs:
+		- embed_dim : integer
+			Dimension size of the Embedding layer
+		- vocabs : list of vocabularies
+		- vocab_size : number of vocabularies
+			If vocabs is None, vocabo_size must be a valid integer
+		- max_len : integer
+			Maximum number of tokens in a sequence
+		- pretrained : string
+			Path to the pretraiend word embeddings. Glove Word-Embedding is used by default
+	Outputs:
+		- _ : Tensorflow Embedding layer
+	"""
 
 	# retrieve vocab-size
 	# index-0 for out-of-vocab token
@@ -112,8 +147,12 @@ def text(text_len = None, vocabs = None, vocab_size = None, embed_dim = None, pr
 			Path to dictionary file
 		- vocab_size : integer
 			Number of vocabs, None by default
+		- embed_dim : integer
+			Dimension size of the Embedding layer
 		- pretrained_embed : str, None by default
 			Path to the pretrained embedding file
+	Outputs:
+		- _ : Tensorflow Keras Model
 	"""
 
 	# read vocabs

@@ -16,7 +16,7 @@ class Dataset:
 	Dataset - class to implement Tensorflow Data API
 	"""
 
-	def __init__(self, data, vocabs, text_len, image_size, overlap_ratio = 0.3, batch_size = 1, buffer_size = 512, seed = 2021):
+	def __init__(self, data, vocabs, text_len, image_size, overlap_ratio = 0.3,  batch_size = 1, buffer_size = 512, seed = 2021):
 		"""
 		Class constructor:
 		Inputs:
@@ -28,8 +28,8 @@ class Dataset:
 				Maximum length of text
 			- image_size : tuple of integers
 				Tuple of [height, width]
-			- overlap_ratio float
-				Ratio of overlapping. If smaller, then ignore the cropped image
+			- overlap_ratio : float
+				To be added
 			- batch_size : integer
 				Number of smapels/batch
 			- buffer_size : integer
@@ -67,6 +67,8 @@ class Dataset:
 		Inputs:
 			- file : str
 				Path to  vocabulary dictionary
+		Outputs:
+			- _ : Tensor Look-up table
 		"""
 
 		initializer =  tf.lookup.TextFileInitializer(filename = file,
@@ -78,6 +80,9 @@ class Dataset:
 	def parse_train(self):
 		"""
 		parse_train - function to parse training data in TFRecord format
+		Inputs: None
+		Outputs:
+			- data : Tensor Dataset
 		"""
 		# shuffle data
 		data = self.data.shuffle(buffer_size = self.buffer_size)
@@ -98,6 +103,9 @@ class Dataset:
 	def parse_test(self):
 		"""
 		parse_test - function to parse testing data in TFRecord format
+		Inputs: None
+		Outputs:
+			- data : Tensor Dataset
 		"""
 
 		# read data
@@ -115,6 +123,12 @@ class Dataset:
 	def _image(self, image):
 		"""
 		process image
+		Inputs:
+			- image : Tensor
+				Image 
+		Outputs:
+			- image : Tensor
+				Post-processed image
 		"""
 
 		# process image
@@ -127,46 +141,63 @@ class Dataset:
 		return image
 
 	@tf.function
-	def _transcripts(self, input):
+	def _transcripts(self, transcript):
 		"""
 		process transcripts
+		Inputs:
+			- transcript : Tensor of string
+				List of transcripts separated by ;
+		Outputs:
+			- transcript : Tensor of string
+				Post-processed transcript
 		"""
 
 		# split transcripts
-		input = tf.strings.split(input, sep = ';')
-
-		# check split transcripts
-		#tf.print('text', input, tf.size(input), input.shape)
+		transcript = tf.strings.split(transcript, sep = ';')
 
 		# processing: lowercase, strip whitepsaces, tokenize, and padding
-		input = tf.map_fn(fn = lambda x: text_proc(x, self.text_len), elems = input,
+		transcript = tf.map_fn(fn = lambda x: text_proc(x, self.text_len), elems = transcript,
 			fn_output_signature = tf.string)
-		#tf.print('tokenized', input, tf.size(input), tf.shape(input))
 
 		# decode vocab-index
-		input = self.vocabs.lookup(input)
-		#tf.print("decoded", input, tf.size(input), tf.shape(input))
+		transcript = self.vocabs.lookup(transcript)
 
-		return input
+		return transcript
 
 	@tf.function
-	def _label(self, input):
+	def _label(self, label):
 		"""
 		process label
+		Inputs:
+			- label : Tensor
+				String: list of one-hot encoded labels for 8 emotion types
+		Outputs:
+			- label : Tensor
+				Post-processed label (one-hot encoded)
 		"""
 
 		# split lable by ','
-		input = tf.strings.split(input, sep = ',')
+		label = tf.strings.split(label, sep = ',')
 
 		# convert str to integer
-		input = tf.strings.to_number(input, out_type = tf.int32).to_tensor()
+		label = tf.strings.to_number(label, out_type = tf.int32).to_tensor()
 
-		return input
+		return label
 
 	#@tf.function
 	def process_train(self, features, labels):
 		"""
 		process_train - function to preprocess image, text, and label
+		Inputs:
+			- features : dictionary of Tensor
+				Dict of {'image' : Tensor, 'transcripts' : Tensor}
+			- labels : Tensor
+				Tensor of labels
+		Outputs:
+			- _ : dictionary of Tensor
+				Dict of {'image' : Tensor, 'transcripts' : Tensor}
+			- _ : Tensor
+				Tensor of labels
 		"""
 
 		return {'image' : self._image(features['image']), 'transcripts' : self._transcripts(features['transcripts'])}, self._label(labels)
@@ -175,13 +206,23 @@ class Dataset:
 	def process_test(self, features):
 		"""
 		process_test - function to preprocess image and text only
+		Inputs: 
+			- features : dictionary of Tensor
+				Dict of {'image' : Tensor, 'transcripts' : Tensor}
+		Outputs:
+			- _ : dictionary of Tensor
+				Dict of {'image' : Tensor, 'transcripts' : Tensor}
 		"""
 
 		return {'image' : self._image(features['image']), 'transcripts' : self._transcripts(features['transripts'])}
 
 	def __call__(self, training = False):
 		"""
-		__call__ - execution
+		__call__ - function to create a Dataset instnace
+		Inputs:
+			- training : boolean
+				Boolean value to return a training or testing Dataset instnace
+		Outputs: None
 		"""
 
 		# parse data
@@ -191,7 +232,6 @@ class Dataset:
 		data = data.batch(self.batch_size)
 
 		# preprocessing image and text
-		func = self.process_train if training else self.process_test
 		if training:
 			data = data.map(lambda features, labels: self.process_train(features, labels),
 				num_parallel_calls = tf.data.experimental.AUTOTUNE)

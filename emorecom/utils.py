@@ -17,6 +17,11 @@ def image_proc(image, size, overlap_ratio):
 			List of image tensors
 		- size : tuple
 			Tuple of (height, width) of the desired image's shape
+		- overlap_ratio : float
+			To be added
+	Outputs:
+		- image : Tensor
+			Post-processed image
 	"""
 	
 	# load image
@@ -44,6 +49,9 @@ def image_to_chunks(image, height, width, overlap_ratio):
 			Target height
 		- width : integer
 			Target width
+		- overlap_ratio : float
+			To be added
+	Outputs: To be added
 	"""
 
 	"""----cut-images-into-smaller-chunks-vertically-----"""
@@ -103,10 +111,18 @@ def crop_and_pad(image, img_h, img_w, x1, x2, y1, y2, height, width):
 	return image
 
 """------------------------------text-processing-------------------------------------------"""
+
 @tf.function
 def text_proc(text, max_len):
 	"""
 	text_proc - function to perform fundamental text-processing (not considering WordPiece Tokenizer)
+	Inputs:
+		- text : Tensor of String
+		- max_len : integer
+			Maximum number of tokens in a sequence
+	Outputs:
+		- text :  Tensor of string
+			Post-processed string
 	"""
 
 	# lower case
@@ -122,7 +138,6 @@ def text_proc(text, max_len):
 	text = tf.strings.reduce_join(text, separator = '[SEP]')
 
 	# tokenize (split by space)
-	#tf.print('basic-text-proc', input, tf.size(input))
 	text = tf.strings.split(text)
 
 	# padding 
@@ -130,15 +145,19 @@ def text_proc(text, max_len):
 		true_fn = lambda: tf.slice(text, begin = [0], size = [max_len]),
 		false_fn = lambda : pad_text(text, max_len))
 
-	# check final result
-	#tf.print('split', inputs, tf.shape(inputs), tf.size(inputs))
-
 	return text
 
 @tf.function
 def pad_text(text, max_len):
 	"""
 	pad_text - function to pad [PAD] token to string
+	Inputs:
+		- text : Tensor of string
+		- max_len : integer
+			Maximum number of tokens in a sequence
+	Outputs: 
+		- _ : Tensor of string
+			Post-processed string
 	"""
 	paddings = tf.repeat(tf.constant('[PAD]'),
 		repeats = max_len - tf.size(text))
@@ -149,6 +168,11 @@ def pad_text(text, max_len):
 def regex_replace(text):
 	"""
 	regex_replace - function to flatten punctuations and short-forms
+	Inputs:
+		- text : Tensor of string
+	Outputs:
+		- _ : Tensor of String
+			Post-processed string 
 	"""
 	def _func(inputs):
 		"""
