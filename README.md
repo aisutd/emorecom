@@ -10,8 +10,10 @@
 * emorecom - core folder consisting of model, data, and utilities
 
 ## Setup and install datasts
+* This repo assumed that Tensorflow is installed successfully and run smoothly on your system (support Tensorflow >= 2.0.0).
 * Initializee settings
 ```
+pip3 install gdown
 pip3 install -r requirements.txt
 ```
 * Install datasets (warm-up, full)
