@@ -45,10 +45,10 @@ def create_model(configs):
 	outputs = tf.keras.layers.AveragePooling1D()(text_model.outputs[0])
 
 	# classfication module
-	outputs = Dense(128, activation = 'relu')(outputs)
+	outputs = Dense(100, activation = 'relu')(outputs)
 	outputs = Flatten()(outputs)
-	outputs = Dense(64, activation = 'relu')(outputs)
-	outputs = Dense(configs['num_class'], activation = 'sigmoid', )(outputs)
+	outputs = Dense(50, activation = 'relu')(outputs)
+	outputs = Dense(configs['num_class'], activation = 'sigmoid')(outputs)
 	return Model(inputs = [vision_model.inputs, text_model.inputs],
 		outputs = outputs)
 
@@ -169,6 +169,6 @@ def text(text_len = None, vocabs = None, vocab_size = None, embed_dim = None, pr
 
 	# bidirectional-lstm
 	outputs = BiLSTM(100, 100)(embeddings)
-	#outputs = BiLSTM(50, 100)(outputs)
+	outputs = BiLSTM(100, 100)(outputs)
 
 	return Model(inputs = inputs, outputs = outputs)
