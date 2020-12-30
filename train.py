@@ -55,8 +55,11 @@ def main(args):
 
 	# set hyperparameters
 	OPTIMIZER = optimizers.Adam(learning_rate = args.learning_rate)
-	LOSS = losses.CategoricalCrossentropy(from_logits = False)
-	METRICS = [metrics.CategoricalAccuracy(), metrics.Precision(), metrics.Recall()]
+	LOSS = losses.BinaryCrossentropy(from_logits = False)
+	METRICS = [metrics.BinaryAccuracy(),
+		metrics.Precision(),
+		metrics.Recall(),
+		metrics.AUC(multi_label = True, thresholds = [0.5])]
 
 	# compile model
 	model.compile(optimizer = OPTIMIZER, loss = LOSS, metrics = METRICS)
@@ -67,7 +70,7 @@ def main(args):
 	CHECKPOINT_PATH = os.path.join(DIR_PATH, args.checkpoint_dir, args.experiment_name)
 	CALLBACKS = [
 		callbacks.TensorBoard(log_dir = LOG_DIR, write_images = True),
-		callbacks.ModelCheckpoint(filepath = CHECKPOINT_PATH, monitor = 'val_loss', verbose = 1, save_best_only = False, mode = 'min')]
+		callbacks.ModelCheckpoint(filepath = CHECKPOINT_PATH, monitor = 'val_loss', verbose = 1, save_best_only = True, mode = 'min')]
 	STEPS_PER_EPOCH = None
 	model.fit(train_data, verbose = 1, callbacks = CALLBACKS, epochs = args.epochs,
 		steps_per_epoch = STEPS_PER_EPOCH)
