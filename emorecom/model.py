@@ -7,7 +7,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras import Input, Model
 from tensorflow.keras.initializers import Constant
-from tensorflow.keras.layers import GlobalAveragePooling1D, Conv2D, Dropout, BatchNormalization, Dense, Flatten, LSTM, Bidirectional, Embedding
+from tensorflow.keras.layers import GlobalAveragePooling2D, GlobalAveragePooling1D, Conv2D, Dropout, BatchNormalization, Dense, Flatten, LSTM, Bidirectional, Embedding
 
 # set random seed
 tf.random.set_seed(2021)
@@ -32,10 +32,13 @@ def create_model(configs):
 		pretrained_embed = configs['pretrained_embed'])
 
 	# fuse visiual and textual features
-	vision_features = Conv2D(256, kernel_size = 3, strides = 1, activation = 'relu')(vision_model.outputs[0])
+	vision_features = Conv2D(512, kernel_size = 3, strides = 1, activation = 'relu', padding = 'same')(vision_model.outputs[0])
+	vision_features = Conv2D(100, kernel_size = 3, strides = 1, activation = 'relu', padding = 'same')(vision_features)
 	vision_shape = tf.shape(vision_features)
+	tf.print("vision features {}".format(vision_features.shape))
 	vision_features = tf.reshape(vision_features, shape = [vision_shape[0], vision_shape[1] * vision_shape[2], vision_shape[-1]])
 
+	tf.print("text features {}".format(text_model.outputs[0].shape))
 	outputs = tf.concat([vision_features, text_model.outputs[0]], axis = 1,
 		name = 'fusion-concat')
 
@@ -44,9 +47,7 @@ def create_model(configs):
 
 	# classfication module
 	outputs = Dense(128, activation = 'relu')(outputs)
-	outputs = Dropout(0.2)(outputs)
 	outputs = Dense(64, activation = 'relu')(outputs)
-
 	outputs = Dense(configs['num_class'], activation = 'sigmoid')(outputs)
 	return Model(inputs = [vision_model.inputs, text_model.inputs],
 		outputs = outputs)
@@ -67,7 +68,7 @@ def vision(img_shape):
 
 	return Model(inputs = inputs, outputs = outputs)
 
-def BiLSTM(forward_units, backward_units):
+def BiLSTM(forward_units, backward_units, return_sequences = True):
 	"""
 	BiLSTM - function to create the Bidirection-LSTM layer
 	Inputs:
@@ -78,8 +79,8 @@ def BiLSTM(forward_units, backward_units):
 	Outputs:
 		- _ : Tensorflow Keras Layer - Bidirectional object
 	"""
-	forward = LSTM(forward_units, return_sequences = True)
-	backward = LSTM(backward_units, return_sequences = True, go_backwards = True)
+	forward = LSTM(forward_units, return_sequences = return_sequences)
+	backward = LSTM(backward_units, return_sequences = return_sequences, go_backwards = True)
 
 	return Bidirectional(layer = forward, backward_layer = backward, merge_mode = 'concat')
 
@@ -167,6 +168,7 @@ def text(text_len = None, vocabs = None, vocab_size = None, embed_dim = None, pr
 		vocab_size = vocab_size, max_len = text_len, pretrained = pretrained_embed)(inputs)
 
 	# bidirectional-lstm
-	outputs = BiLSTM(128, 128)(embeddings)
+	outputs = BiLSTM(50, 50)(embeddings)
+	#outputs = BiLSTM(50, 100)(outputs)
 
 	return Model(inputs = inputs, outputs = outputs)
