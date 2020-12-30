@@ -1,5 +1,5 @@
 """
-train.py - training module
+predict.py - prediction module
 """
 
 # import dependencies
