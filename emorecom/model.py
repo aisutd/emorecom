@@ -42,7 +42,8 @@ def create_model(configs):
 	#	name = 'fusion-concat')
 
 	# select max-features
-	outputs = tf.keras.layers.AveragePooling1D()(text_model.outputs[0])
+	#outputs = tf.keras.layers.AveragePooling1D()(text_model.outputs[0])
+	outputs = text_model.outputs[0]
 
 	# classfication module
 	outputs = Dense(100, activation = 'relu')(outputs)
