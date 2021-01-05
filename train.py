@@ -12,7 +12,7 @@ from tensorflow.keras import optimizers, callbacks, losses, metrics
 
 # import local packages
 from emorecom.data import Dataset
-from emorecom.model import create_model
+from emorecom.models.model import create_model
 
 # get directory path
 DIR_PATH = os.getcwd()
