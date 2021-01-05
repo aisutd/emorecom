@@ -1,6 +1,8 @@
 # emorecom
 [ICDAR2021 Competition Multimodal Emotion Recognition on Comics scenes](https://sites.google.com/view/emotion-recognition-for-comics)
 
+Details: [available here](https://sites.google.com/view/emotion-recognition-for-comics/home?authuser=0)
+
 ## Repo strucutre
 * train.py - training module
 * preprocess.py - module for concatenating image, transcripts, and label for efficient loading
