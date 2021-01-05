@@ -17,6 +17,9 @@ from emorecom.model import create_model
 # get directory path
 DIR_PATH = os.getcwd()
 
+# reset sessin
+tf.keras.backend.clear_session()
+
 def main(args):
 
 	"""------parser-arugments------"""
@@ -39,6 +42,7 @@ def main(args):
 		val_data = val_dataset(training = True)
 	else:
 		val_data = None
+	print(val_data)
 
 	# test train-dataset
 	#images, transcripts, labels = next(iter(train_data))
