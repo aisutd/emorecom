@@ -184,8 +184,9 @@ class Dataset:
 
 		return label
 
-	#@tf.function
+	@tf.function
 	def process_train(self, features, labels):
+	
 		"""
 		process_train - function to preprocess image, text, and label
 		Inputs:
@@ -229,7 +230,7 @@ class Dataset:
 		data = self.parse_train() if training else self.parse_test()
 
 		# batch
-		data = data.batch(self.batch_size)
+		data = data.batch(self.batch_size, drop_remainder = True)
 
 		# preprocessing image and text
 		if training:
