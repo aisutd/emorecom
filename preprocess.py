@@ -8,8 +8,10 @@ import re
 import json
 import glob
 import argparse
+import numpy as np
 import pandas as pd
 import tensorflow as tf
+from sklearn.model_selection import train_test_split
 
 from emorecom.utils import regex_replace
 
@@ -17,7 +19,7 @@ from emorecom.utils import regex_replace
 DEFAULT_PATH = os.path.join(os.getcwd(), 'dataset')
 EMOTIONS = ['angry', 'disgust', 'feear', 'happy', 'sad', 'surprise', 'neutral', 'others']
 
-def train_concat(file_name, image_path, transcripts, labels):
+def train_concat(file_name, image_path, transcripts, labels, indices):
 	"""
 	concat - function to concat images, transcripts, and labels together
 	"""
@@ -31,7 +33,9 @@ def train_concat(file_name, image_path, transcripts, labels):
 		return tf.train.Example(features = tf.train.Features(feature = output)).SerializeToString()
 
 	with tf.io.TFRecordWriter(file_name) as writer:
-		for transcript in transcripts:
+		for idx in indices:
+			transcript = transcripts[idx]
+			#for transcript in transcripts:
 			try:
 				# retrieve labels, image, and transcripts
 				print(labels[labels['image_id'] == transcript['img_id']])
@@ -130,7 +134,6 @@ def main(args):
 	transcripts = os.path.join(DEFAULT_PATH, args.transcript)
 	image_path = os.path.join(DEFAULT_PATH, args.image)
 	labels = os.path.join(DEFAULT_PATH, args.label)
-	output = os.path.join(DEFAULT_PATH, args.output)
 
 	# read transcripts
 	with open(transcripts) as file:
@@ -146,8 +149,30 @@ def main(args):
 	# concat images, transcripts, and labels (if training is True)
 	if args.training:
 		print("Concat images, transcripts, and labels")
-		train_concat(output, image_path, transcripts, labels)
-		test(output)
+
+		# generate retrivial indicees for transcripts
+		indices = np.arange(start = 0, stop = len(transcripts))
+
+		if args.test_size > 0.0:
+			# split indices
+			train_indices, val_indices = train_test_split(indices, test_size = args.test_size, random_state = 2021)
+			# training
+			print("Concat training data")
+			train_output = os.path.join(DEFAULT_PATH, args.train_output)
+			train_concat(train_output, image_path, transcripts, labels, train_indices)
+			test(train_output)
+
+			# val
+			print("Concat validation data")
+			input()	
+			val_output = os.path.join(DEFAULT_PATH, args.val_output)
+			train_concat(val_output, image_path, transcripts, labels, val_indices)
+			test(val_output)
+		else:
+			print("Concat data")
+			output = os.path.join(DEFAULT_PATH, args.train_output)
+			train_concat(output, image_path, transcripts, labels, indices)
+			test(output)
 	else:
 		print("Concat images and transcripts")
 		#test_concat(output, image_path, transcripts)
@@ -171,6 +196,8 @@ if __name__ == '__main__':
 	parser.add_argument('--image', type = str, default = os.path.join('warm-up-train', 'train'))
 	parser.add_argument('--transcript', type = str, default = os.path.join('warm-up-train', 'train_transcriptions.json'))
 	parser.add_argument('--label', type = str, default = os.path.join('warm-up-train', 'train_emotion_labels.csv'))
-	parser.add_argument('--output', type = str, default = 'train.tfrecords')
+	parser.add_argument('--test-size', type = float, default = 0.0)
+	parser.add_argument('--train-output', type = str, default = 'train.tfrecords')
+	parser.add_argument('--val-output', type = str, default = 'val.tfrecords')
 	parser.add_argument('--vocab-name', type =str, default = 'vocabs.txt')
 	main(parser.parse_args())
