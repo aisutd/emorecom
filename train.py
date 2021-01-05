@@ -22,16 +22,23 @@ def main(args):
 	"""------parser-arugments------"""
 	# initialize dataset
 	assert args.train_data
-	TRAIN_DATA = os.path.join(DIR_PATH, args.train_data)
-	if args.test_data:
-		TEST_DATA = os.path.join(DIR_PATH, args.test_data)
-	
-	# initialize train-dataset
-	print("Creating Data Loading")
 	VOCABS = os.path.join(DIR_PATH, args.vocabs)
-	dataset = Dataset(data = TRAIN_DATA, vocabs = VOCABS, image_size = [args.image_height, args.image_width],
+
+	# initialize datset
+	print("Creating Train Data Loading")
+	TRAIN_DATA = os.path.join(DIR_PATH, args.train_data)
+	train_dataset = Dataset(data = TRAIN_DATA, vocabs = VOCABS, image_size = [args.image_height, args.image_width],
 		text_len = args.text_len, batch_size = args.batch_size)
-	train_data = dataset(training = True)
+	train_data = train_dataset(training = True)
+
+	print("Create Validation Data Loading")
+	if args.validation_data:
+		VALIDATION_DATA = os.path.join(DIR_PATH, args.validation_data)
+		val_dataset = Dataset(data = VALIDATION_DATA, vocabs = VOCABS, image_size = [args.image_height, args.image_width],
+			text_len = args.text_len, batch_size = args.batch_size)
+		val_data = val_dataset(training = True)
+	else:
+		val_data = None
 
 	# test train-dataset
 	#images, transcripts, labels = next(iter(train_data))
@@ -95,8 +102,7 @@ if __name__ == '__main__':
 	parser.add_argument('--vocab-size', default = None)
 	parser.add_argument('--vocabs', type = str, default = 'dataset/vocabs.txt')
 	parser.add_argument('--train-data', type = str, default = 'dataset/train.tfrecords')
-	parser.add_argument('--test-data', type = str, default = None)
-	parser.add_argument('--validation-data', type = str, default = 'dataset/validation.tfrecords')
+	parser.add_argument('--validation-data', type = str, default = None)
 	parser.add_argument('--logdir', type = str, default = 'logs')
 	parser.add_argument('--checkpoint-dir', type = str, default = 'checkpoints')
 	parser.add_argument('--pretrained-embedding', type = str, default = 'glove.twitter.27B/glove.twitter.27B.100d.txt')
