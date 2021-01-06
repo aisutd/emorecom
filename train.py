@@ -12,12 +12,12 @@ from tensorflow.keras import optimizers, callbacks, losses, metrics
 
 # import local packages
 from emorecom.data import Dataset
-from emorecom.model import create_model
+from emorecom.models.model import create_model
 
 # get directory path
 DIR_PATH = os.getcwd()
 
-# clear session
+# reset session
 tf.keras.backend.clear_session()
 
 def main(args):
@@ -42,6 +42,7 @@ def main(args):
 		val_data = val_dataset(training = True)
 	else:
 		val_data = None
+	print(val_data)
 
 	# test train-dataset
 	#images, transcripts, labels = next(iter(train_data))
@@ -87,7 +88,7 @@ def main(args):
 
 	# save model
 	model_path = os.path.join(DIR_PATH, args.saved_models, args.experiment_name)
-	tf.saved_model.save(model, model_path)
+	model.save(model_path)
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
@@ -99,9 +100,9 @@ if __name__ == '__main__':
 	parser.add_argument('--image-height', type = int, default = 224)
 	parser.add_argument('--image-width', type = int, default = 224)
 	parser.add_argument('--embedding-dim', default = None) 
-	parser.add_argument('--batch-size', type = int, default = 1)
-	parser.add_argument('--learning-rate', type = float, default = 0.0001)
-	parser.add_argument('--epochs', type = int, default = 1)
+	parser.add_argument('--batch-size', type = int, default = 16)
+	parser.add_argument('--learning-rate', type = float, default = 0.001)
+	parser.add_argument('--epochs', type = int, default = 10)
 	parser.add_argument('--vocab-size', default = None)
 	parser.add_argument('--vocabs', type = str, default = 'dataset/vocabs.txt')
 	parser.add_argument('--train-data', type = str, default = 'dataset/train.tfrecords')

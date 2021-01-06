@@ -1,6 +1,8 @@
 # emorecom
 [ICDAR2021 Competition Multimodal Emotion Recognition on Comics scenes](https://sites.google.com/view/emotion-recognition-for-comics)
 
+Details: [available here](https://sites.google.com/view/emotion-recognition-for-comics/home?authuser=0)
+
 ## Repo strucutre
 * train.py - training module
 * preprocess.py - module for concatenating image, transcripts, and label for efficient loading
@@ -24,10 +26,15 @@ bash download_full_datast.sh
 * Run preprocessing to concat image-paths, labels, and transcripts into a single TFRecord file for efficient loading
 ```
 # for training dataset
-python3 preprocess.py --training True --image warm-up-train/train --transcript warm-up-train/train_transcriptions.json --lable warm-up-train/train_emotion_labels.csv --out train.tfrecords
+python3 preprocess.py --test-size 0.2 --training --image warm-up-train/train \
+--transcript warm-up-train/train_transcriptions.json \
+--lable warm-up-train/train_emotion_labels.csv \
+--output train.tfrecords --val-output val.tfrecords
 
 # for testing dataset
-python3 preprocess.py --training False --image warm-up-test/test --transcript warm-up-test/test_transcriptions.json --out test.tfrecords
+python3 preprocess.py --image warm-up-test/test \
+--transcript warm-up-test/test_transcriptions.json \
+--output test.tfrecords
 ```
 * Install Glove Word-Embeddings
 ```
@@ -35,11 +42,20 @@ bash download_twitter_glove_we.sh
 ```
 * Training
 ```
+# remember to preprocess training and validation data as above
+
 # check train.sh for additional arguments
 bash train.sh
 ```
 * Inference
+```
+# remember to preprocess inference data as above
 
+# make predictions
+bash predict.py
+# or (assume that all trained models ared saved in /saved_models folder
+python3 train.py --experiment-name model_1_resnet_lstm_early_fusion
+```
 ---
 ## Dataset details
 * Warm-up dataset:

@@ -7,7 +7,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras import Input, Model
 from tensorflow.keras.initializers import Constant
-from tensorflow.keras.layers import GlobalAveragePooling2D, GlobalAveragePooling1D, Conv2D, Dropout, BatchNormalization, Dense, Flatten, LSTM, Bidirectional, Embedding
+from tensorflow.keras.layers import Reshape, GlobalAveragePooling2D, GlobalAveragePooling1D, Conv2D, Dropout, BatchNormalization, Dense, Flatten, LSTM, Bidirectional, Embedding
 
 # set random seed
 tf.random.set_seed(2021)
@@ -32,23 +32,23 @@ def create_model(configs):
 		pretrained_embed = configs['pretrained_embed'])
 
 	# fuse visiual and textual features
-	vision_features = Conv2D(200, kernel_size = 3, strides = 1, activation = 'relu', padding = 'same')(vision_model.outputs[0])
-	#vision_shape = tf.shape(vision_features)
-	#tf.print("vision features {}".format(vision_features.shape))
-	#vision_features = tf.reshape(vision_features, shape = [vision_shape[0], vision_shape[1] * vision_shape[2], vision_shape[-1]])
+	vision_features = Conv2D(512, kernel_size = 3, strides = 1, activation = 'relu', padding = 'valid')(vision_model.outputs[0])
+	vision_features = Reshape((-1, 512))(vision_features)
 
-	#tf.print("text features {}".format(text_model.outputs[0].shape))
-	#outputs = tf.concat([vision_features, text_model.outputs[0]], axis = 1,
-	#	name = 'fusion-concat')
+	#tf.print("vision-shape {} and text-shape {}".format(vision_features.shape, text_model.outputs[0].shape))
+	outputs = tf.concat([vision_features, text_model.outputs[0]], axis = 1,
+		name = 'fusion-concat')	
 
 	# select max-features
-	outputs = tf.keras.layers.AveragePooling1D()(text_model.outputs[0])
+	#outputs = tf.keras.layers.AveragePooling1D()(text_model.outputs[0])
+	#outputs = text_model.outputs[0]
 
 	# classfication module
-	outputs = Dense(128, activation = 'relu')(outputs)
+	#outputs = Dense(100, activation = 'relu')(outputs)
 	outputs = Flatten()(outputs)
-	outputs = Dense(64, activation = 'relu')(outputs)
-	outputs = Dense(configs['num_class'], activation = 'sigmoid', )(outputs)
+	outputs = Dense(128, activation = 'relu')(outputs)
+	outputs = Dense(configs['num_class'], activation = 'sigmoid')(outputs)
+
 	return Model(inputs = [vision_model.inputs, text_model.inputs],
 		outputs = outputs)
 
@@ -168,7 +168,7 @@ def text(text_len = None, vocabs = None, vocab_size = None, embed_dim = None, pr
 		vocab_size = vocab_size, max_len = text_len, pretrained = pretrained_embed)(inputs)
 
 	# bidirectional-lstm
-	outputs = BiLSTM(100, 100)(embeddings)
-	#outputs = BiLSTM(50, 100)(outputs)
+	outputs = BiLSTM(256, 256)(embeddings)
+	#outputs = BiLSTM(256, 256)(outputs)
 
 	return Model(inputs = inputs, outputs = outputs)
