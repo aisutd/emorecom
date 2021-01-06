@@ -111,9 +111,10 @@ class Dataset:
 		# read data
 		@tf.function
 		def _parse(example):
-			
-			# read image
 			example = tf.io.parse_single_example(example, self.test_features)
+
+			# read image
+			example['image'] = tf.io.read_file(example['image'])
 
 			return {'image' : example['image'], 'transcripts' : example['transcripts']}
 		data = self.data.cache().map(_parse, num_parallel_calls = tf.data.experimental.AUTOTUNE)

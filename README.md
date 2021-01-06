@@ -26,10 +26,15 @@ bash download_full_datast.sh
 * Run preprocessing to concat image-paths, labels, and transcripts into a single TFRecord file for efficient loading
 ```
 # for training dataset
-python3 preprocess.py --test-size 0.2 --training True --image warm-up-train/train --transcript warm-up-train/train_transcriptions.json --lable warm-up-train/train_emotion_labels.csv --out train.tfrecords
+python3 preprocess.py --test-size 0.2 --training --image warm-up-train/train \
+--transcript warm-up-train/train_transcriptions.json \
+--lable warm-up-train/train_emotion_labels.csv \
+--output train.tfrecords --val-output val.tfrecords
 
 # for testing dataset
-python3 preprocess.py --test-size 0.2 --training False --image warm-up-test/test --transcript warm-up-test/test_transcriptions.json --out test.tfrecords
+python3 preprocess.py --image warm-up-test/test \
+--transcript warm-up-test/test_transcriptions.json \
+--output test.tfrecords
 ```
 * Install Glove Word-Embeddings
 ```
@@ -37,10 +42,18 @@ bash download_twitter_glove_we.sh
 ```
 * Training
 ```
+# remember to preprocess training and validation data as above
+
 # check train.sh for additional arguments
 bash train.sh
 ```
 * Inference
+```
+# remember to preprocess inference data as above
+
+# make preedictions
+bash predict.py
+```
 
 ---
 ## Dataset details
