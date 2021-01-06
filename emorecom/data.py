@@ -116,7 +116,7 @@ class Dataset:
 			example = tf.io.parse_single_example(example, self.test_features)
 
 			return {'image' : example['image'], 'transcripts' : example['transcripts']}
-		data = data.cache().map(_parse, num_parallel_calls = tf.data.experimental.AUTOTUNE)
+		data = self.data.cache().map(_parse, num_parallel_calls = tf.data.experimental.AUTOTUNE)
 		return data
 
 	@tf.function
@@ -215,7 +215,7 @@ class Dataset:
 				Dict of {'image' : Tensor, 'transcripts' : Tensor}
 		"""
 
-		return {'image' : self._image(features['image']), 'transcripts' : self._transcripts(features['transripts'])}
+		return {'image' : self._image(features['image']), 'transcripts' : self._transcripts(features['transcripts'])}
 
 	def __call__(self, training = False):
 		"""
@@ -237,7 +237,7 @@ class Dataset:
 			data = data.map(lambda features, labels: self.process_train(features, labels),
 				num_parallel_calls = tf.data.experimental.AUTOTUNE)
 		else:
-			data = data.map(lambda feature: self.process_test(features),
+			data = data.map(lambda features: self.process_test(features),
 				num_parallel_calls = tf.data.experimental.AUTOTUNE)
 
 		return data.prefetch(tf.data.experimental.AUTOTUNE)
