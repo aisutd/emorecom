@@ -58,9 +58,14 @@ def main(args):
 	# test test-dataset
 	#images, transcripts = next(iter(test_data))
 	#print(images.shape, transcripts.shape)
-	for sample in test_data.take(1):
-		features = sample
-		print(features['image'].shape, features['transcripts'].shape)
+	iterator = iter(test_data)
+	features = next(iterator)
+	for _ in range(8):
+		print(features['image'].shape, features['transcripts'])
+		try:
+			feautres = next(iterator)
+		except:
+			break
 
 	# initialize model
 	"""

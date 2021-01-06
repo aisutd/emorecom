@@ -185,8 +185,6 @@ class Dataset:
 		label = tf.strings.split(label, sep = ',')
 
 		# convert str to integer
-		#print(label)
-		#tf.print(label)
 		label = tf.strings.to_number(label, out_type = tf.int32)#.to_tensor()
 
 		return label
@@ -235,19 +233,15 @@ class Dataset:
 		# parse data
 		data = self.parse_train() if training else self.parse_test()
 
-		# batch
-		#data = data.batch(self.batch_size, drop_remainder = True)
-
 		# preprocessing image and text
+		# batching
 		if training:
-			#data = data.map(lambda features, labels: self.process_train(features, labels),
 			data = data.map(self.process_train,
 				num_parallel_calls = tf.data.experimental.AUTOTUNE)
 			data = data.batch(self.batch_size, drop_remainder = True)
 		else:
-			#data = data.map(lambda features: self.process_test(features),
 			data = data.map(self.process_test,
 				num_parallel_calls = tf.data.experimental.AUTOTUNE)
-			data = data.batch(self.batch_size, drop_remainder = True)
+			data = data.batch(self.batch_size)
 
 		return data.prefetch(tf.data.experimental.AUTOTUNE)
