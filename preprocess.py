@@ -234,7 +234,7 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser('Argument Parser')
 
 	# add arguments
-	parser.add_argument('--training', default = True, action = 'store_false')
+	parser.add_argument('--training', default = False, action = 'store_true')
 	parser.add_argument('--image', type = str, default = os.path.join('warm-up-train', 'train'))
 	parser.add_argument('--transcript', type = str, default = os.path.join('warm-up-train', 'train_transcriptions.json'))
 	parser.add_argument('--label', type = str, default = os.path.join('warm-up-train', 'train_emotion_labels.csv'))
