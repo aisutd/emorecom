@@ -16,6 +16,9 @@ from emorecom.data import Dataset
 # get directory path
 DIR_PATH = os.getcwd()
 
+# reset session
+tf.keras.backend.clear_session()
+
 def _load_model(path):
 	"""
 	_load_model - function load model for prediction
@@ -33,6 +36,8 @@ def _load_model(path):
 	for idx in range(len(model.layers)):
 		model.layers[idx].trainable = False
 		model.layers[idx].training = False
+	print(model.summary())
+	input()
 
 	return model
 
@@ -87,7 +92,7 @@ def main(args):
 	"""
 
 	# make predictions
-	#predictions = model.predict(test_data, verbose = 1)	
+	predictions = model.predict(test_data, verbose = 1)	
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()

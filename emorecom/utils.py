@@ -24,9 +24,6 @@ def image_proc(image, size, overlap_ratio):
 			Post-processed image
 	"""
 	
-	# load image
-	image = tf.io.decode_image(image, dtype = tf.float32)
-
 	# not implemented
 	# split image to chunks
 	#image = image_to_chunks(image, size[0], size[1], overlap_ratio)

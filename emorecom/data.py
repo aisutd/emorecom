@@ -132,12 +132,15 @@ class Dataset:
 				Post-processed image
 		"""
 
+		# decode image
+		image = tf.io.decode_image(image, dtype = tf.float32)
+
 		# process image
-		image = tf.map_fn(fn = lambda img : image_proc(img, size = self.image_size, overlap_ratio = self.overlap_ratio),
-			elems = image, fn_output_signature = tf.float32)
+		#image = tf.map_fn(fn = lambda img : image_proc(img, size = self.image_size, overlap_ratio = self.overlap_ratio),
+		#	elems = image, fn_output_signature = tf.float32)
 
 		# below is for non-batching
-		#imgae = image_proc(image, size = self.image_size, overlap_ratio = self.overlap_ratio)
+		image = image_proc(image, size = self.image_size, overlap_ratio = self.overlap_ratio)
 
 		return image
 
@@ -157,8 +160,9 @@ class Dataset:
 		transcript = tf.strings.split(transcript, sep = ';')
 
 		# processing: lowercase, strip whitepsaces, tokenize, and padding
-		transcript = tf.map_fn(fn = lambda x: text_proc(x, self.text_len), elems = transcript,
-			fn_output_signature = tf.string)
+		#transcript = tf.map_fn(fn = lambda x: text_proc(x, self.text_len), elems = transcript,
+		#	fn_output_signature = tf.string)
+		transcript = text_proc(transcript, self.text_len)
 
 		# decode vocab-index
 		transcript = self.vocabs.lookup(transcript)
@@ -181,7 +185,9 @@ class Dataset:
 		label = tf.strings.split(label, sep = ',')
 
 		# convert str to integer
-		label = tf.strings.to_number(label, out_type = tf.int32).to_tensor()
+		#print(label)
+		#tf.print(label)
+		label = tf.strings.to_number(label, out_type = tf.int32)#.to_tensor()
 
 		return label
 
@@ -201,7 +207,6 @@ class Dataset:
 			- _ : Tensor
 				Tensor of labels
 		"""
-
 		return {'image' : self._image(features['image']), 'transcripts' : self._transcripts(features['transcripts'])}, self._label(labels)
 
 	@tf.function
@@ -231,14 +236,18 @@ class Dataset:
 		data = self.parse_train() if training else self.parse_test()
 
 		# batch
-		data = data.batch(self.batch_size, drop_remainder = True)
+		#data = data.batch(self.batch_size, drop_remainder = True)
 
 		# preprocessing image and text
 		if training:
-			data = data.map(lambda features, labels: self.process_train(features, labels),
+			#data = data.map(lambda features, labels: self.process_train(features, labels),
+			data = data.map(self.process_train,
 				num_parallel_calls = tf.data.experimental.AUTOTUNE)
+			data = data.batch(self.batch_size, drop_remainder = True)
 		else:
-			data = data.map(lambda features: self.process_test(features),
+			#data = data.map(lambda features: self.process_test(features),
+			data = data.map(self.process_test,
 				num_parallel_calls = tf.data.experimental.AUTOTUNE)
+			data = data.batch(self.batch_size, drop_remainder = True)
 
 		return data.prefetch(tf.data.experimental.AUTOTUNE)

@@ -51,10 +51,11 @@ bash train.sh
 ```
 # remember to preprocess inference data as above
 
-# make preedictions
+# make predictions
 bash predict.py
+# or (assume that all trained models ared saved in /saved_models folder
+python3 train.py --experiment-name model_1_resnet_lstm_early_fusion
 ```
-
 ---
 ## Dataset details
 * Warm-up dataset:

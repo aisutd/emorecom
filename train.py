@@ -88,7 +88,7 @@ def main(args):
 
 	# save model
 	model_path = os.path.join(DIR_PATH, args.saved_models, args.experiment_name)
-	tf.saved_model.save(model, model_path)
+	model.save(model_path)
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
