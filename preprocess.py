@@ -138,6 +138,21 @@ def test(filename):
 	parsed_data = data.map(_parse)
 	print(next(iter(parsed_data)))
 
+def inference_test(filename):
+	# read tfrecord file
+	data = tf.data.TFRecordDataset(filename)
+
+	for sample in data.take(5):
+		print(sample)
+	def _parse(input):
+		feature_details = {
+			'image' : tf.io.FixedLenFeature([], tf.string),
+			'transcripts' : tf.io.FixedLenFeature([], tf.string)}
+		return tf.io.parse_single_example(input, feature_details)
+
+	parsed_data = data.map(_parse)
+	print(next(iter(parsed_data)))
+
 def build_vocab(inputs, vocab_name):
 	print("Build vocabs")
 
@@ -229,6 +244,7 @@ def main(args):
 		print("Concat data for inference")
 		output = os.path.join(DEFAULT_PATH, args.output)
 		test_concat(output, image_path, transcripts)
+		inference_test(output)
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser('Argument Parser')
