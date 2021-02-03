@@ -192,9 +192,11 @@ def main(args):
 	with open(transcripts) as file:
 		transcripts = json.load(file)
 
-	# read labels
-	if args.label:
-		labels = os.path.join(DEFAULT_PATH, args.label)	
+	# concat images, transcripts, and labels (if training is True)
+	if args.training:
+		# check if given args.label is valid
+		assert args.label, "Training modee requires valid labels"
+		labels = os.path.join(DEFAULT_PATH, args.label)
 		labels = pd.read_csv(labels)
 
 		# rename columns
@@ -202,13 +204,7 @@ def main(args):
 			columns = {
 				old:new for old, new in zip(labels.columns, ['id', 'image_id'] + EMOTIONS)})
 
-	# concat images, transcripts, and labels (if training is True)
-	if args.training:
-		# check if given args.label is valid
-		assert args.label, "Training modee requires valid labels"
-
 		print("Concat images, transcripts, and labels")
-
 		# generate retrivial indicees for transcripts
 		indices = np.arange(start = 0, stop = len(transcripts))
 
@@ -251,9 +247,9 @@ if __name__ == '__main__':
 
 	# add arguments
 	parser.add_argument('--training', default = False, action = 'store_true')
-	parser.add_argument('--image', type = str, default = os.path.join('warm-up-train', 'train'))
-	parser.add_argument('--transcript', type = str, default = os.path.join('warm-up-train', 'train_transcriptions.json'))
-	parser.add_argument('--label', type = str, default = os.path.join('warm-up-train', 'train_emotion_labels.csv'))
+	parser.add_argument('--image', type = str, default = os.path.join('public_data', 'train'))
+	parser.add_argument('--transcript', type = str, default = os.path.join('pulbic_data', 'train_transcriptions.json'))
+	parser.add_argument('--label', type = str, default = os.path.join('public_data', 'train_emotion_labels.csv'))
 	parser.add_argument('--test-size', type = float, default = 0.0)
 	parser.add_argument('--output', type = str, default = 'train.tfrecords')
 	parser.add_argument('--val-output', type = str, default = 'val.tfrecords')
