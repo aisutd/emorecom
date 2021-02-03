@@ -1,7 +1,6 @@
 """
 predict.py - prediction module
-"""
-
+""" 
 # import dependencies
 import os
 import glob
@@ -36,8 +35,6 @@ def _load_model(path):
 	for idx in range(len(model.layers)):
 		model.layers[idx].trainable = False
 		model.layers[idx].training = False
-	print(model.summary())
-	input()
 
 	return model
 
@@ -55,13 +52,11 @@ def main(args):
 		text_len = args.text_len, batch_size = args.batch_size)
 	test_data = dataset(training = False)
 
-	# test test-dataset
-	#images, transcripts = next(iter(test_data))
-	#print(images.shape, transcripts.shape)
+	# inspect test-dataset
 	iterator = iter(test_data)
 	features = next(iterator)
 	for _ in range(8):
-		print(features['image'].shape, features['transcripts'])
+		print(features['image'].shape, features['transcripts'].shape)
 		try:
 			feautres = next(iterator)
 		except:
@@ -78,10 +73,10 @@ def main(args):
 		'pretrained_embed' : os.path.join(DIR_PATH, args.pretrained_embedding),
 		'num_class' : args.num_class}
 	model = create_model(configs = MODEL_CONFIGS)
-	print(model.summary())
 	"""
 	model_path = os.path.join(DIR_PATH, args.saved_models, args.experiment_name)
 	model = _load_model(model_path)
+	print(model.summary())
 
 	# set hyperparameters
 	"""

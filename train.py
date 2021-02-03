@@ -83,8 +83,8 @@ def main(args):
 		callbacks.TensorBoard(log_dir = LOG_DIR, write_images = True),
 		callbacks.ModelCheckpoint(filepath = CHECKPOINT_PATH, monitor = 'val_loss', verbose = 1, save_best_only = True, mode = 'min')]
 	STEPS_PER_EPOCH = None
-	model.fit(train_data, verbose = 1, callbacks = CALLBACKS, epochs = args.epochs,
-		steps_per_epoch = STEPS_PER_EPOCH)
+	model.fit(train_data, verbose = 1, callbacks = CALLBACKS, epochs = args.epochs)#,
+	#steps_per_epoch = STEPS_PER_EPOCH)
 
 	# save model
 	model_path = os.path.join(DIR_PATH, args.saved_models, args.experiment_name)

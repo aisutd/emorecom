@@ -96,7 +96,7 @@ class Dataset:
 			example['image'] = tf.io.read_file(example['image'])
 		
 			return {'image' : example['image'], 'transcripts' : example['transcripts']}, example['label']
-		data = data.cache().map(_parse, num_parallel_calls = tf.data.experimental.AUTOTUNE)
+		data = data.map(_parse, num_parallel_calls = tf.data.experimental.AUTOTUNE)
 
 		return data
 
@@ -117,7 +117,7 @@ class Dataset:
 			example['image'] = tf.io.read_file(example['image'])
 
 			return {'image' : example['image'], 'transcripts' : example['transcripts']}
-		data = self.data.cache().map(_parse, num_parallel_calls = tf.data.experimental.AUTOTUNE)
+		data = self.data.map(_parse, num_parallel_calls = tf.data.experimental.AUTOTUNE)
 		return data
 
 	@tf.function
@@ -242,6 +242,6 @@ class Dataset:
 		else:
 			data = data.map(self.process_test,
 				num_parallel_calls = tf.data.experimental.AUTOTUNE)
-			data = data.batch(self.batch_size)
+			data = data.batch(1)#(self.batch_size)
 
 		return data.prefetch(tf.data.experimental.AUTOTUNE)
