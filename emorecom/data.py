@@ -242,6 +242,6 @@ class Dataset:
 		else:
 			data = data.map(self.process_test,
 				num_parallel_calls = tf.data.experimental.AUTOTUNE)
-			data = data.batch(1)#(self.batch_size)
+			data = data.batch(self.batch_size)
 
 		return data.prefetch(tf.data.experimental.AUTOTUNE)

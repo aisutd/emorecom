@@ -5,6 +5,7 @@ predict.py - prediction module
 import os
 import glob
 import argparse
+import pandas as pd
 import tensorflow as tf
 
 from tensorflow.keras import optimizers, callbacks, losses, metrics
@@ -94,6 +95,15 @@ def main(args):
 	# make predictions
 	predictions = model.predict(test_data, verbose = 1)	
 
+	# save results
+	columns = ['id', 'image_id', 'angry', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral', 'other']
+	results = pd.read_csv('dataset/public_data/results.csv', header = None)
+	cols = results.columns
+	results.rename(columns = {x:y for x, y in zip(cols, columns)}, inplace = True)
+
+	results[columns[2:]] = predictions
+	results.to_csv('results_{}.csv'.format(args.experiment_name))
+
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
 	
@@ -105,7 +115,7 @@ if __name__ == '__main__':
 	parser.add_argument('--image-height', type = int, default = 224)
 	parser.add_argument('--image-width', type = int, default = 224)
 	parser.add_argument('--embedding-dim', default = None) 
-	parser.add_argument('--batch-size', type = int, default = 1)
+	parser.add_argument('--batch-size', type = int, default = 6)
 	parser.add_argument('--vocab-size', default = None)
 	parser.add_argument('--vocabs', type = str, default = 'dataset/vocabs.txt')
 	parser.add_argument('--test-data', type = str, default = 'dataset/test.tfrecords')
