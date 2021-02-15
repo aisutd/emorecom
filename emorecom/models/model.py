@@ -44,9 +44,10 @@ def create_model(configs):
 	#outputs = text_model.outputs[0]
 
 	# classfication module
-	#outputs = Dense(100, activation = 'relu')(outputs)
+	outputs = Dense(256, activation = 'relu', kernel_regularizer = 'l2')(outputs)
 	outputs = Flatten()(outputs)
-	outputs = Dense(128, activation = 'relu')(outputs)
+	outputs = Dense(128, activation = 'relu', kernel_regularizer = 'l2')(outputs)
+	#outputs = Dense(64, activation = 'relu', kernel_regularizer = 'l2')(outputs)
 	outputs = Dense(configs['num_class'], activation = 'sigmoid')(outputs)
 
 	return Model(inputs = [vision_model.inputs, text_model.inputs],

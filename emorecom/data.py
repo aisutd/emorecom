@@ -11,6 +11,8 @@ import tensorflow as tf
 # import local packages
 from emorecom.utils import text_proc, image_proc
 
+tf.random.set_seed(2021)
+
 class Dataset:
 	"""
 	Dataset - class to implement Tensorflow Data API
