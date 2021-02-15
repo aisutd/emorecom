@@ -135,3 +135,5 @@ dataset/*
 **/*.swp
 **/*.zip
 **/glove.twitter.27B
+**/glove.twitter.27B.100d.txt
+**/results.csv
