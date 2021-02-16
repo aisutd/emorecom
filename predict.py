@@ -102,7 +102,7 @@ def main(args):
 	results.rename(columns = {x:y for x, y in zip(cols, columns)}, inplace = True)
 
 	results[columns[2:]] = predictions
-	results.to_csv('results_{}.csv'.format(args.experiment_name))
+	results.to_csv('results.csv')
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
