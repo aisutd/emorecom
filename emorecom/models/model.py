@@ -90,7 +90,7 @@ def EmbeddingLayer(embed_dim = None, vocabs = None, vocab_size = None, max_len =
 	Inputs:
 		- embed_dim : integer
 			Dimension size of the Embedding layer
-		- vocabs : list of vocabularies
+		- vocabs : path to vocab file
 		- vocab_size : number of vocabularies
 			If vocabs is None, vocabo_size must be a valid integer
 		- max_len : integer
@@ -104,6 +104,9 @@ def EmbeddingLayer(embed_dim = None, vocabs = None, vocab_size = None, max_len =
 	# retrieve vocab-size
 	# index-0 for out-of-vocab token
 	if vocabs:
+		# read vocabs
+		with open(vocabs) as file:
+			vocabs = file.read().split('\n')[:-1]
 		vocab_size = len(vocabs)
 	else:
 		# if vocabs not given, then vocab-size must not be None
@@ -155,10 +158,6 @@ def text(text_len = None, vocabs = None, vocab_size = None, embed_dim = None, pr
 	Outputs:
 		- _ : Tensorflow Keras Model
 	"""
-
-	# read vocabs
-	with open(vocabs) as file:
-		vocabs = file.read().split('\n')[:-1]
 
 	# initialize input
 	inputs = Input(shape = [text_len], name = 'transcripts')
