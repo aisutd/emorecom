@@ -10,6 +10,8 @@ import tensorflow as tf
 
 from tensorflow.keras import optimizers, callbacks, losses, metrics
 
+tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
+
 # import local packages
 from emorecom.data import Dataset
 from emorecom.models.model import create_model
@@ -19,6 +21,8 @@ DIR_PATH = os.getcwd()
 
 # reset session
 tf.keras.backend.clear_session()
+
+tf.random.set_seed(2021)
 
 def main(args):
 
@@ -48,7 +52,7 @@ def main(args):
 	#images, transcripts, labels = next(iter(train_data))
 	#print(labels)
 	#print(images.shape, transcripts.shape, labels.shape)
-	for sample in train_data.take(1):
+	for sample in val_data.take(1):
 		features, labels = sample
 		print(features['image'].shape, features['transcripts'], labels)
 
@@ -80,11 +84,14 @@ def main(args):
 	LOG_DIR = os.path.join(DIR_PATH, args.logdir, args.experiment_name)
 	CHECKPOINT_PATH = os.path.join(DIR_PATH, args.checkpoint_dir, args.experiment_name)
 	CALLBACKS = [
+		#callbacks.EarlyStopping(min_delta = 0.01, patience = 10, restore_best_weights = True),
+		callbacks.ReduceLROnPlateau(patience = 5, verbose = 1, min_delta = 0.1),
 		callbacks.TensorBoard(log_dir = LOG_DIR, write_images = True),
 		callbacks.ModelCheckpoint(filepath = CHECKPOINT_PATH, monitor = 'val_loss', verbose = 1, save_best_only = True, mode = 'min')]
 	STEPS_PER_EPOCH = None
-	model.fit(train_data, verbose = 1, callbacks = CALLBACKS, epochs = args.epochs)#,
-	#steps_per_epoch = STEPS_PER_EPOCH)
+	model.fit(train_data, verbose = 1, callbacks = CALLBACKS,
+		epochs = args.epochs, validation_data = val_data,
+		steps_per_epoch = STEPS_PER_EPOCH)
 
 	# save model
 	model_path = os.path.join(DIR_PATH, args.saved_models, args.experiment_name)
@@ -106,7 +113,7 @@ if __name__ == '__main__':
 	parser.add_argument('--vocab-size', default = None)
 	parser.add_argument('--vocabs', type = str, default = 'dataset/vocabs.txt')
 	parser.add_argument('--train-data', type = str, default = 'dataset/train.tfrecords')
-	parser.add_argument('--validation-data', type = str, default = None)
+	parser.add_argument('--validation-data', type = str, default = 'dataset/val.tfrecords')
 	parser.add_argument('--logdir', type = str, default = 'logs')
 	parser.add_argument('--checkpoint-dir', type = str, default = 'checkpoints')
 	parser.add_argument('--pretrained-embedding', type = str, default = 'glove.twitter.27B/glove.twitter.27B.100d.txt')
