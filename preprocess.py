@@ -192,6 +192,7 @@ def main(args):
 	with open(transcripts) as file:
 		transcripts = json.load(file)
 
+	input()
 	# concat images, transcripts, and labels (if training is True)
 	if args.training:
 		# check if given args.label is valid
@@ -248,7 +249,7 @@ if __name__ == '__main__':
 	# add arguments
 	parser.add_argument('--training', default = False, action = 'store_true')
 	parser.add_argument('--image', type = str, default = os.path.join('public_data', 'train'))
-	parser.add_argument('--transcript', type = str, default = os.path.join('pulbic_data', 'train_transcriptions.json'))
+	parser.add_argument('--transcript', type = str, default = os.path.join('public_data', 'train_transcriptions.json'))
 	parser.add_argument('--label', type = str, default = os.path.join('public_data', 'train_emotion_labels.csv'))
 	parser.add_argument('--test-size', type = float, default = 0.0)
 	parser.add_argument('--output', type = str, default = 'train.tfrecords')
