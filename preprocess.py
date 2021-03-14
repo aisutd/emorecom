@@ -192,7 +192,6 @@ def main(args):
 	with open(transcripts) as file:
 		transcripts = json.load(file)
 
-	input()
 	# concat images, transcripts, and labels (if training is True)
 	if args.training:
 		# check if given args.label is valid
