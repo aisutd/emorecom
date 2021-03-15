@@ -52,9 +52,9 @@ bash train.sh
 # remember to preprocess inference data as above
 
 # make predictions
-bash predict.py
-# or (assume that all trained models ared saved in /saved_models folder
-python3 train.py --experiment-name model_1_resnet_lstm_early_fusion
+bash predict.sh
+# or python3 predict.py with custom arguments
+python3 predict.py --experiment-name model #look at predict.py for more arguments
 ```
 ---
 ## Dataset details
