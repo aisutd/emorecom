@@ -9,9 +9,7 @@ import pickle
 import tensorflow as tf
 
 # import local packages
-from emorecom.utils import text_proc, image_proc
-
-tf.random.set_seed(2021)
+from emorecom.utils import text_proc, image_proc, text_blank
 
 class Dataset:
 	"""
@@ -49,6 +47,7 @@ class Dataset:
 		self.text_len = text_len
 		self.image_size = image_size
 		self.overlap_ratio = overlap_ratio
+		self.seed = seed
 
 		# read vocabs dictionary
 		self.vocabs = self.load_vocabs(vocabs)
@@ -138,11 +137,11 @@ class Dataset:
 		image = tf.io.decode_image(image, dtype = tf.float32)
 
 		# process image
-		#image = tf.map_fn(fn = lambda img : image_proc(img, size = self.image_size, overlap_ratio = self.overlap_ratio),
+		#image = tf.map_fn(fn = lambda img : image_proc(img, size = self.image_size, seed = self.seed),
 		#	elems = image, fn_output_signature = tf.float32)
 
 		# below is for non-batching
-		image = image_proc(image, size = self.image_size, overlap_ratio = self.overlap_ratio)
+		image = image_proc(image, size = self.image_size, seed = self.seed, training = self.training)
 
 		return image
 
@@ -153,6 +152,7 @@ class Dataset:
 		Inputs:
 			- transcript : Tensor of string
 				List of transcripts separated by ;
+			- training : boolean
 		Outputs:
 			- transcript : Tensor of string
 				Post-processed transcript
@@ -162,12 +162,13 @@ class Dataset:
 		transcript = tf.strings.split(transcript, sep = ';')
 
 		# processing: lowercase, strip whitepsaces, tokenize, and padding
-		#transcript = tf.map_fn(fn = lambda x: text_proc(x, self.text_len), elems = transcript,
-		#	fn_output_signature = tf.string)
 		transcript = text_proc(transcript, self.text_len)
 
 		# decode vocab-index
 		transcript = self.vocabs.lookup(transcript)
+
+		# text augmentation: blanking
+		transcript = text_blank(transcript) if self.training else transcript 
 
 		return transcript
 
@@ -231,6 +232,8 @@ class Dataset:
 				Boolean value to return a training or testing Dataset instnace
 		Outputs: None
 		"""
+
+		self.training = training
 
 		# parse data
 		data = self.parse_train() if training else self.parse_test()

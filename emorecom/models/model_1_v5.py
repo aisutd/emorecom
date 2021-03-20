@@ -32,8 +32,10 @@ def create_model(configs):
 		pretrained_embed = configs['pretrained_embed'])
 
 	# fuse visiual and textual features
-	vision_features = Conv2D(1024, kernel_size = 3, strides = 1, activation = 'relu', padding = 'valid')(vision_model.outputs[0])
-	vision_features = Reshape((-1, 1024))(vision_features)
+	vision_features = Conv2D(512, kernel_size = 3, strides = 1, activation = 'relu', padding = 'valid')(vision_model.outputs[0])
+	vision_features = Reshape((-1, 512))(vision_features)
+
+	#tf.print("vision-shape {} and text-shape {}".format(vision_features.shape, text_model.outputs[0].shape))
 	outputs = tf.concat([vision_features, text_model.outputs[0]], axis = 1,
 		name = 'fusion-concat')	
 
@@ -44,7 +46,8 @@ def create_model(configs):
 	# classfication module
 	outputs = Dense(256, activation = 'relu', kernel_regularizer = 'l2')(outputs)
 	outputs = Flatten()(outputs)
-	outputs = Dense(64, activation = 'relu', kernel_regularizer = 'l2')(outputs)
+	outputs = Dense(128, activation = 'relu', kernel_regularizer = 'l2')(outputs)
+	#outputs = Dense(64, activation = 'relu', kernel_regularizer = 'l2')(outputs)
 	outputs = Dense(configs['num_class'], activation = 'sigmoid')(outputs)
 
 	return Model(inputs = [vision_model.inputs, text_model.inputs],
@@ -165,7 +168,7 @@ def text(text_len = None, vocabs = None, vocab_size = None, embed_dim = None, pr
 		vocab_size = vocab_size, max_len = text_len, pretrained = pretrained_embed)(inputs)
 
 	# bidirectional-lstm
-	outputs = BiLSTM(512, 512)(embeddings)
-	outputs = BiLSTM(512, 512)(outputs)
+	outputs = BiLSTM(256, 256)(embeddings)
+	outputs = BiLSTM(256, 256)(outputs)
 
 	return Model(inputs = inputs, outputs = outputs)

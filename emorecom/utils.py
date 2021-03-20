@@ -5,11 +5,13 @@ utils.py - data-preprocessing module
 # import dependencies
 import re
 import string
+import numpy as np
 import tensorflow as tf
+
 
 """------------------------------image-processing-------------------------------------------"""
 @tf.function
-def image_proc(image, size, overlap_ratio):
+def image_proc(image, size, seed, training):
 	"""
 	image_proc - function to process image while training. Up to designs
 	Inputs:
@@ -17,95 +19,55 @@ def image_proc(image, size, overlap_ratio):
 			List of image tensors
 		- size : tuple
 			Tuple of (height, width) of the desired image's shape
-		- overlap_ratio : float
-			To be added
+		- training : boolean
 	Outputs:
 		- image : Tensor
 			Post-processed image
 	"""
+	# set seed
+	np.random.seed(seed)
 	
-	# not implemented
-	# split image to chunks
-	#image = image_to_chunks(image, size[0], size[1], overlap_ratio)
+	# transform 
+	image = image if not training else image_aug(image, seed)
 
-	# resize image
-	image = tf.image.resize_with_crop_or_pad(image, size[0], size[1])
+	# resize to preferred image
+	image = tf.image.resize_with_pad(image, size[0], size[1], method = tf.image.ResizeMethod.BILINEAR)
 
 	# standarize
 	image = tf.image.per_image_standardization(image)
 
 	return image
 
-def image_to_chunks(image, height, width, overlap_ratio):
+def image_aug(img, seed):
 	"""
-	image_to_chunks - split a large image to smaller images
-	Inputs:
-		- image : Tensor
-			Tensor of image in shape [width, height, 3]
-		- height : integer
-			Target height
-		- width : integer
-			Target width
-		- overlap_ratio : float
-			To be added
-	Outputs: To be added
+	Randomlly augment image
+	Args:
+		img : image tensor
+		seed : int
+	Returns:
+		img : image tensor
+			augmented images
 	"""
 
-	"""----cut-images-into-smaller-chunks-vertically-----"""
-	img_shape = tf.shape(image)
-	img_h, img_w = img_shape[0], img_shape[1]
+	# get random action
+	act = np.random.randint(low = 0, high = 3)
+	# get shape
+	img_shape = tf.shape(img)
 
-	def _crop():
-		"""
-		_crop - function to split images into smaller chunks.
-			If height > ratio x width, then split by height. And vice versa
-			Default, split by horizontally
-		"""
-		if img_h > 2 * img_w:
-			# split by height
-			num_split = tf.cast(tf.math.ceil(img_h / height), dtype = tf.int32)
-			delta = tf.cast(tf.math.round(img_h / num_split), dtype = tf.int32)
-			outputs = tf.zeros([1, height, width, 3])
-			cond = lambda idx, o: idx < num_split
-			body = lambda idx, o: [idx + 1, tf.concat([o,
-					tf.expand_dims(crop_and_pad(image, img_h, img_w, idx * delta, (idx + 1) * delta, 0, width, height, width), axis = 0)], axis = 0)]
-			_, outputs = tf.while_loop(cond = cond, body = body,
-				loop_vars = [0, outputs], shape_invariants = [None, tf.TensorShape([None, height, width, 3])])
-			return outputs #[1:]
-		else:
-			# split by width
-			num_split = tf.cast(tf.math.ceil(img_w / width), dtype = tf.int32)
-			delta = tf.cast(tf.math.round(img_w / num_split), dtype = tf.int32)
+	# shift horizontally and vertically within range [-20, 20]
+	if act == 0:
+		offset_h, offset_w = np.random.randint(low = -20, high = 20), np.random.randint(low = -20, high = 20)
+		img = tf.image.crop_to_bounding_box(img,
+			0 if offset_h > 0 else abs(offset_h), 0 if offset_w > 0 else abs(offset_w), img_shape[0] - abs(offset_h), img_shape[1] - abs(offset_w))
+		img = tf.image.pad_to_bounding_box(img, offset_h if offset_h  > 0 else 0, offset_w if offset_w > 0 else 0, img_shape[0], img_shape[1])
+	# ranodmly flip hortizontally
+	elif act == 1:
+		img = tf.image.random_flip_left_right(img, seed = seed)
+	# random brightness
+	elif act == 2:
+		img = tf.image.random_brightness(img, max_delta = 0.1, seed = seed)
 
-			outputs = tf.zeros([1, height, width, 3])
-			cond = lambda idx, o: idx < num_split
-			body = lambda idx, o: [idx + 1, tf.concat([o,
-					tf.expand_dims(crop_and_pad(image, img_h, img_w, 0, height, idx * delta, (idx + 1) * delta, height, width), axis = 0)], axis = 0)]
-			_, outputs = tf.while_loop(cond = cond, body = body,
-				loop_vars = [0, outputs], shape_invariants = [None, tf.TensorShape([None, height, width, 3])])
-
-			return outputs#[1:]
-
-	img = tf.cond(pred = tf.math.logical_and(tf.math.less(img_h, height), tf.math.less(img_w, width)),
-		true_fn = lambda: tf.image.resize_with_pad(image, height, width),
-		false_fn = lambda: _crop())
-
-	tf.print(tf.shape(img), tf.shape(image))
 	return img
-
-@tf.function
-def crop_and_pad(image, img_h, img_w, x1, x2, y1, y2, height, width):
-	"""
-	crop_and_pad - function top crop image to the desired size and pad them if necessary
-	"""
-
-	# crop
-	image = image[x1:tf.math.minimum(x2, img_h),
-		y1:tf.math.minimum(y2, img_w), :]
-
-	# resize 
-	image = tf.image.resize_with_crop_or_pad(image, height, width)
-	return image
 
 """------------------------------text-processing-------------------------------------------"""
 
@@ -141,6 +103,26 @@ def text_proc(text, max_len):
 	text = tf.cond(pred = tf.math.greater(tf.size(text), max_len),
 		true_fn = lambda: tf.slice(text, begin = [0], size = [max_len]),
 		false_fn = lambda : pad_text(text, max_len))
+
+	return text
+
+@tf.function
+def text_blank(text, text_len):
+	"""
+	Randomly blank tokens
+	Args;
+		text : tensor
+		text_len : int
+	Returns:
+		text : tensor
+	"""
+
+	# randomly generate blank indices
+	blank_index = np.random.randint(low = 1, high = text_len, size = np.random.randint(low = 0, high 4))
+	blank_index = tf.one_hot(indices = blank_index, depth = 1, on_value = 0, off_value = 1, dtype = tf.int32)
+
+	# blank tokens
+	text = tf.math.multiply(text, blank_index)
 
 	return text
 

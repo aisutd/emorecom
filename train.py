@@ -46,7 +46,6 @@ def main(args):
 		val_data = val_dataset(training = True)
 	else:
 		val_data = None
-	print(val_data)
 
 	# test train-dataset
 	#images, transcripts, labels = next(iter(train_data))
@@ -71,7 +70,7 @@ def main(args):
 	# set hyperparameters
 	OPTIMIZER = optimizers.Adam(learning_rate = args.learning_rate)
 	LOSS = losses.BinaryCrossentropy(from_logits = False)
-	METRICS = [metrics.BinaryAccuracy(),
+	METRICS = [
 		metrics.Precision(),
 		metrics.Recall(),
 		metrics.AUC(multi_label = True, thresholds = [0.5])]
@@ -86,12 +85,10 @@ def main(args):
 	CALLBACKS = [
 		#callbacks.EarlyStopping(min_delta = 0.01, patience = 10, restore_best_weights = True),
 		callbacks.ReduceLROnPlateau(patience = 5, verbose = 1, min_delta = 0.1),
-		callbacks.TensorBoard(log_dir = LOG_DIR, write_images = True),
-		callbacks.ModelCheckpoint(filepath = CHECKPOINT_PATH, monitor = 'val_loss', verbose = 1, save_best_only = True, mode = 'min')]
-	STEPS_PER_EPOCH = None
+		callbacks.TensorBoard(log_dir = LOG_DIR, write_images = True)]
+		#callbacks.ModelCheckpoint(filepath = CHECKPOINT_PATH, monitor = 'val_auc', verbose = 1, save_best_only = False, mode = 'min')]
 	model.fit(train_data, verbose = 1, callbacks = CALLBACKS,
-		epochs = args.epochs, validation_data = val_data,
-		steps_per_epoch = STEPS_PER_EPOCH)
+		epochs = args.epochs, validation_data = val_data)
 
 	# save model
 	model_path = os.path.join(DIR_PATH, args.saved_models, args.experiment_name)
