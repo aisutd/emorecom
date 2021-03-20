@@ -107,22 +107,29 @@ def text_proc(text, max_len):
 	return text
 
 @tf.function
-def text_blank(text, text_len):
+def text_blank(text, seed, limit):
 	"""
 	Randomly blank tokens
 	Args;
 		text : tensor
-		text_len : int
+		seed : int
+		limit : int
 	Returns:
 		text : tensor
 	"""
 
+	np.random.seed(seed)
+
 	# randomly generate blank indices
-	blank_index = np.random.randint(low = 1, high = text_len, size = np.random.randint(low = 0, high 4))
-	blank_index = tf.one_hot(indices = blank_index, depth = 1, on_value = 0, off_value = 1, dtype = tf.int32)
+	blank_index = tf.random.uniform(minval = 1, maxval = tf.shape(text)[0], dtype = tf.int32, seed = seed,
+		shape = tf.expand_dims(tf.random.uniform(minval = 0, maxval = limit, dtype = tf.int32, seed = seed, shape= []), axis = 0))
+	blank_index = tf.one_hot(indices = blank_index, depth = tf.shape(text)[0])
+	blank_index = tf.math.reduce_sum(blank_index, axis = 0) # 0 -> no blank & >=1 -> blank 
 
 	# blank tokens
-	text = tf.math.multiply(text, blank_index)
+	text = tf.where(condition = tf.math.equal(blank_index, 0),
+		x = text,
+		y = tf.zeros_like(text, dtype = text.dtype))
 
 	return text
 

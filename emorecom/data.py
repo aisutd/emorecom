@@ -16,7 +16,7 @@ class Dataset:
 	Dataset - class to implement Tensorflow Data API
 	"""
 
-	def __init__(self, data, vocabs, text_len, image_size, overlap_ratio = 0.3,  batch_size = 1, buffer_size = 512, seed = 2021):
+	def __init__(self, data, vocabs, text_len, image_size, overlap_ratio = 0.3, batch_size = 1, buffer_size = 512, seed = 2021):
 		"""
 		Class constructor:
 		Inputs:
@@ -28,8 +28,6 @@ class Dataset:
 				Maximum length of text
 			- image_size : tuple of integers
 				Tuple of [height, width]
-			- overlap_ratio : float
-				To be added
 			- batch_size : integer
 				Number of smapels/batch
 			- buffer_size : integer
@@ -168,7 +166,8 @@ class Dataset:
 		transcript = self.vocabs.lookup(transcript)
 
 		# text augmentation: blanking
-		transcript = text_blank(transcript) if self.training else transcript 
+		limit_blank = 4
+		transcript = text_blank(transcript, self.seed, limit = limit_blank) if self.training else transcript 
 
 		return transcript
 
