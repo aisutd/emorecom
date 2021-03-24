@@ -48,9 +48,6 @@ def main(args):
 		val_data = None
 
 	# test train-dataset
-	#images, transcripts, labels = next(iter(train_data))
-	#print(labels)
-	#print(images.shape, transcripts.shape, labels.shape)
 	for sample in val_data.take(1):
 		features, labels = sample
 		print(features['image'].shape, features['transcripts'], labels)
@@ -83,10 +80,10 @@ def main(args):
 	LOG_DIR = os.path.join(DIR_PATH, args.logdir, args.experiment_name)
 	CHECKPOINT_PATH = os.path.join(DIR_PATH, args.checkpoint_dir, args.experiment_name)
 	CALLBACKS = [
-		#callbacks.EarlyStopping(min_delta = 0.01, patience = 10, restore_best_weights = True),
-		callbacks.ReduceLROnPlateau(patience = 5, verbose = 1, min_delta = 0.1),
-		callbacks.TensorBoard(log_dir = LOG_DIR, write_images = True)]
-		#callbacks.ModelCheckpoint(filepath = CHECKPOINT_PATH, monitor = 'val_auc', verbose = 1, save_best_only = False, mode = 'min')]
+		callbacks.EarlyStopping(min_delta = 0.001, patience = 7, restore_best_weights = True),
+		callbacks.ReduceLROnPlateau(patience = 5, verbose = 1, min_delta = 0.05),
+		callbacks.TensorBoard(log_dir = LOG_DIR, write_images = True),
+		callbacks.ModelCheckpoint(filepath = CHECKPOINT_PATH, monitor = 'val_auc', verbose = 1, save_best_only = True, mode = 'max')]
 	model.fit(train_data, verbose = 1, callbacks = CALLBACKS,
 		epochs = args.epochs, validation_data = val_data)
 

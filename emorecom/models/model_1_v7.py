@@ -7,7 +7,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras import Input, Model
 from tensorflow.keras.initializers import Constant
-from tensorflow.keras.layers import Reshape, GlobalAveragePooling2D, Conv2D, Dropout, BatchNormalization, Dense, Flatten, LSTM, Bidirectional, Embedding
+from tensorflow.keras.layers import Reshape, GlobalAveragePooling2D, GlobalAveragePooling1D, Conv2D, Dropout, BatchNormalization, Dense, Flatten, LSTM, Bidirectional, Embedding
 
 # set random seed
 tf.random.set_seed(2021)
@@ -25,21 +25,25 @@ def create_model(configs):
 
 	# vision
 	vision_model = vision(img_shape = configs['img_shape'])
-	vision_features = GlobalAveragePooling2D()(vision_model.outputs[0])
-	vision_features = Dense(1024, activation = 'relu', kernel_regularizer = 'l2')(vision_features)
 
 	# text
 	text_model = text(text_len = configs['text_len'], vocabs = configs['vocabs'],
 		vocab_size = configs['vocab_size'], embed_dim = configs['embed_dim'],
 		pretrained_embed = configs['pretrained_embed'])
-	text_features = Dense(1024, activation = 'relu', kernel_regularizer = 'l2')(text_model.outputs[0])
 
-	# fusing by matrix-product
-	outputs = tf.multiply(vision_features, text_features) 
+	# fuse visiual and textual features
+	vision_features = Conv2D(1024, kernel_size = 3, strides = 1, activation = 'relu', padding = 'valid')(vision_model.outputs[0])
+	vision_features = Reshape((-1, 1024))(vision_features)
+	outputs = tf.concat([vision_features, text_model.outputs[0]], axis = 1,
+		name = 'fusion-concat')	
+
+	# select max-features
+	#outputs = tf.keras.layers.AveragePooling1D()(text_model.outputs[0])
+	#outputs = text_model.outputs[0]
 
 	# classfication module
-	outputs = Dense(128, activation = 'relu', kernel_regularizer = 'l2')(outputs)
-	outputs = Dropout(rate = 0.2)(outputs)
+	outputs = Dense(256, activation = 'relu', kernel_regularizer = 'l2')(outputs)
+	outputs = Flatten()(outputs)
 	outputs = Dense(64, activation = 'relu', kernel_regularizer = 'l2')(outputs)
 	outputs = Dense(configs['num_class'], activation = 'sigmoid')(outputs)
 
@@ -73,8 +77,8 @@ def BiLSTM(forward_units, backward_units, return_sequences = True):
 	Outputs:
 		- _ : Tensorflow Keras Layer - Bidirectional object
 	"""
-	forward = LSTM(forward_units, return_sequences = return_sequences, return_state = True)
-	backward = LSTM(backward_units, return_sequences = return_sequences, return_state = True, go_backwards = True)
+	forward = LSTM(forward_units, return_sequences = return_sequences)
+	backward = LSTM(backward_units, return_sequences = return_sequences, go_backwards = True)
 
 	return Bidirectional(layer = forward, backward_layer = backward, merge_mode = 'concat')
 
@@ -162,6 +166,6 @@ def text(text_len = None, vocabs = None, vocab_size = None, embed_dim = None, pr
 
 	# bidirectional-lstm
 	outputs = BiLSTM(512, 512)(embeddings)
-	outputs = tf.concat([outputs[1], outputs[3], outputs[2], outputs[3]], axis = -1)
+	outputs = BiLSTM(512, 512)(outputs)
 
 	return Model(inputs = inputs, outputs = outputs)
